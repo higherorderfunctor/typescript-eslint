@@ -25,6 +25,9 @@ const logTsserverInfo = debug(
 const logTsserverPerf = debug(
   'typescript-eslint:typescript-estree:tsserver:perf',
 );
+const logTsserverEvent = debug(
+  'typescript-eslint:typescript-estree:tsserver:event',
+);
 
 export type TypeScriptProjectService = ts.server.ProjectService;
 
@@ -65,14 +68,15 @@ export function createProjectService(
     endGroup: doNothing,
     getLogFileName: (): undefined => undefined,
     // The debug library doesn't use levels without creating a namespace for each.
-    // Log levels are not passed to the writer so we can't forward to a respective namespace.
-    // Supporting would require an additional flag for grainular control.
-    // Defaulting to all levels for now.
+    // Log levels are not passed to the writer so we wouldn't be able to forward
+    // to a respective namespace.  Supporting would require an additional flag for
+    // grainular control.  Defaulting to all levels for now.
     hasLevel: (): boolean => true,
     info(s) {
       this.msg(s, tsserver.server.Msg.Info);
     },
     loggingEnabled: (): boolean =>
+      // if none of the debug namespaces are enabled, then don;t enable logging in tsserver
       logTsserverInfo.enabled ||
       logTsserverErr.enabled ||
       logTsserverPerf.enabled,
@@ -100,9 +104,13 @@ export function createProjectService(
     useSingleInferredProject: false,
     useInferredProjectPerProjectRoot: false,
     logger,
+    eventHandler: (e): void => {
+      logTsserverEvent(e);
+    },
     session: undefined,
     jsDocParsingMode,
   });
+
   if (options.defaultProject) {
     try {
       const configFile = getParsedConfigFile(
