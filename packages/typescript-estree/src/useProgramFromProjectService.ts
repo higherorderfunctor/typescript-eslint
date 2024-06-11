@@ -1,15 +1,17 @@
+import { writeHeapSnapshot } from 'node:v8';
+
 import debug from 'debug';
 import { diffChars } from 'diff';
 import { LRUCache } from 'lru-cache';
 import { minimatch } from 'minimatch';
 import path from 'path';
+import { memoryUsage } from 'process';
 import * as ts from 'typescript';
 
 import { createProjectProgram } from './create-program/createProjectProgram';
 import type { ProjectServiceSettings } from './create-program/createProjectService';
 import { watches } from './create-program/getWatchesForProjectService';
 import type { ASTAndDefiniteProgram } from './create-program/shared';
-import { getAstFromProgram } from './create-program/shared';
 import { DEFAULT_PROJECT_FILES_ERROR_EXPLANATION } from './create-program/validateDefaultProjectForFilesGlob';
 import type { MutableParseSettings } from './parseSettings';
 
@@ -17,21 +19,33 @@ const log = debug(
   'typescript-eslint:typescript-estree:useProgramFromProjectService',
 );
 
+function printHeapSize(): void {
+  const memoryData = memoryUsage();
+  log(`Heap Total: ${memoryData.heapTotal / 1024 / 1024} GB`);
+  log(`Heap Used: ${memoryData.heapUsed / 1024 / 1024} GB`);
+}
+
+export function takeHeapSnapshot(): void {
+  const filename = `${process.cwd()}/.clinic/${Date.now()}.heapsnapshot`;
+  writeHeapSnapshot(filename);
+}
+
 const getOpenedFilesLruCache = (
   service: ts.server.ProjectService & {
     __opened_lru_cache?: Map<string, ts.server.OpenConfiguredProjectResult>;
   },
-) => {
+): Map<string, ts.server.OpenConfiguredProjectResult> => {
   if (!service.__opened_lru_cache) {
     service.__opened_lru_cache = new LRUCache<
       string,
       ts.server.OpenConfiguredProjectResult
     >({
-      max: 50,
+      max: 25,
       dispose: (_, key): void => {
         log(`LRU: Evicting item with key ${key}`);
         service.closeClientFile(key);
         log(`LRU" Item with key ${key} has been evicted`);
+        log('Opened files: %s', service.openFiles.size);
       },
     });
   }
@@ -107,6 +121,7 @@ export function useProgramFromProjectService(
   hasFullTypeInformation: boolean,
   defaultProjectMatchedFiles: Set<string>,
 ): ASTAndDefiniteProgram | undefined {
+  printHeapSize();
   // We don't canonicalize the filename because it caused a performance regression.
   // See https://github.com/typescript-eslint/typescript-eslint/issues/8519
   const filePathAbsolute = absolutify(parseSettings.filePath);
@@ -143,20 +158,6 @@ export function useProgramFromProjectService(
       // log(start, end, content)
       cachedScriptInfo.editContent(start, end, content);
     });
-
-    // const program = programCache.get(filePathAbsolute);
-    // if (program) {
-    //   log('Using cached program to get AST: %s', filePathAbsolute);
-    //   const ast = getAstFromProgram(program, filePathAbsolute);
-    //   if (ast) {
-    //     log('Using AST from cached program: %s', filePathAbsolute);
-    //     log("AST: %s", inspect(ast, { depth: 10 }));
-    //     return ast;
-    //   }
-    //   log('Failed to get AST from cached program: %s', filePathAbsolute);
-    // } else {
-    //   log('Cached program not found: %s', filePathAbsolute);
-    // }
   }
 
   const isOpened = openedFilesCache.has(filePathAbsolute);
@@ -267,7 +268,12 @@ If you absolutely need more files included, set parserOptions.projectService.max
 
   log('Found project service program for: %s', filePathAbsolute);
 
-  return createProjectProgram(parseSettings, [program]);
+  const newProgram = createProjectProgram(parseSettings, [program]);
+
+  printHeapSize();
+  // takeHeapSnapshot();
+
+  return newProgram;
 
   function absolutify(filePath: string): string {
     return path.isAbsolute(filePath)
