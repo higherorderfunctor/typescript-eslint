@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { debug } from 'debug';
 import * as ts from 'typescript';
+
+const log = debug(
+  'typescript-eslint:typescript-estree:getWatchesForProjectService',
+);
 
 export class TrieNode<T> {
   children: Map<string, TrieNode<T>>;
@@ -12,9 +17,11 @@ export class TrieNode<T> {
 
 export class Trie<T> {
   root: TrieNode<T>;
+  count: number;
 
   constructor() {
     this.root = new TrieNode('');
+    this.count = 1;
   }
 
   insert(path: string): TrieNode<T> {
@@ -27,6 +34,7 @@ export class Trie<T> {
         path = `${rootPath}/${part}`;
         if (!currentNode.children.has(part)) {
           currentNode.children.set(part, new TrieNode(path));
+          this.count++;
         }
         return {
           currentNode: currentNode.children.get(part)!,
@@ -38,6 +46,7 @@ export class Trie<T> {
         rootPath: this.root.path,
       },
     );
+    log('inserted %s (%d)', path, this.count);
     return currentNode;
   }
 
@@ -64,6 +73,8 @@ export class Trie<T> {
   }
 }
 
+export const watches = new Trie<Watcher>();
+
 export class Watcher implements ts.FileWatcher {
   constructor(
     private readonly node: TrieNode<Watcher>,
@@ -71,11 +82,10 @@ export class Watcher implements ts.FileWatcher {
   ) {}
 
   close(): void {
+    log('closing %s', this.node.path);
     this.node.value = null;
   }
 }
-
-export const watches = new Trie<Watcher>();
 
 export const saveFileWatchCallback = (
   path: string,

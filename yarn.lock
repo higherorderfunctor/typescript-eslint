@@ -5052,6 +5052,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/diff@npm:^5.2.1":
+  version: 5.2.1
+  resolution: "@types/diff@npm:5.2.1"
+  checksum: 5983a323177bd691cb2194f5d55b960cd20a9c8fec653b4b038760c5809627cc9ea3578fdf10119ccbefefef193ea925f2817136eb97b17388f66b16c8480a8a
+  languageName: node
+  linkType: hard
+
 "@types/eslint-scope@link:./tools/dummypkg::locator=%40typescript-eslint%2Ftypescript-eslint%40workspace%3A.":
   version: 0.0.0-use.local
   resolution: "@types/eslint-scope@link:./tools/dummypkg::locator=%40typescript-eslint%2Ftypescript-eslint%40workspace%3A."
@@ -5278,6 +5285,13 @@ __metadata:
   version: 2.0.11
   resolution: "@types/mdx@npm:2.0.11"
   checksum: 4199e8d58f0a40be908fe8148959a4e9779f94339f83327495dd5a6609fc82cd5f6ff7391bf6077d7d2ca73cedec3557a51cac5044f0d6f2ae37e40019813dfe
+  languageName: node
+  linkType: hard
+
+"@types/memwatch-next@npm:^0.3.6":
+  version: 0.3.6
+  resolution: "@types/memwatch-next@npm:0.3.6"
+  checksum: 8dba1880fcf98697303085cd1b4466ccda3032dbb1c5faf319dac3398af2de55093229c90c7ba23640ebbe1dca49ee8ed98733e92d02d2fc0f177f42819a5edb
   languageName: node
   linkType: hard
 
@@ -6149,13 +6163,19 @@ __metadata:
   resolution: "@typescript-eslint/typescript-estree@workspace:packages/typescript-estree"
   dependencies:
     "@jest/types": 29.6.3
+    "@types/diff": ^5.2.1
+    "@types/memwatch-next": ^0.3.6
     "@typescript-eslint/types": "link:../types"
     "@typescript-eslint/visitor-keys": "link:../visitor-keys"
     debug: ^4.3.4
+    diff: ^5.2.0
     glob: "*"
     globby: ^11.1.0
     is-glob: ^4.0.3
     jest: 29.7.0
+    lru-cache: ^10.2.2
+    memwatch: ^0.2.2
+    memwatch-next: ^0.3.0
     minimatch: ^9.0.4
     prettier: ^3.2.5
     rimraf: "*"
@@ -7469,6 +7489,15 @@ __metadata:
   version: 2.2.0
   resolution: "binary-extensions@npm:2.2.0"
   checksum: ccd267956c58d2315f5d3ea6757cf09863c5fc703e50fbeb13a7dc849b812ef76e3cf9ca8f35a0c48498776a7478d7b4a0418e1e2b8cb9cb9731f2922aaad7f8
+  languageName: node
+  linkType: hard
+
+"bindings@npm:^1.2.1":
+  version: 1.5.0
+  resolution: "bindings@npm:1.5.0"
+  dependencies:
+    file-uri-to-path: 1.0.0
+  checksum: 65b6b48095717c2e6105a021a7da4ea435aa8d3d3cd085cb9e85bcb6e5773cf318c4745c3f7c504412855940b585bdf9b918236612a1c7a7942491de176f1ae7
   languageName: node
   linkType: hard
 
@@ -9358,6 +9387,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"diff@npm:^5.2.0":
+  version: 5.2.0
+  resolution: "diff@npm:5.2.0"
+  checksum: 12b63ca9c36c72bafa3effa77121f0581b4015df18bc16bac1f8e263597735649f1a173c26f7eba17fb4162b073fee61788abe49610e6c70a2641fe1895443fd
+  languageName: node
+  linkType: hard
+
 "dir-glob@npm:^3.0.1":
   version: 3.0.1
   resolution: "dir-glob@npm:3.0.1"
@@ -10872,6 +10908,13 @@ __metadata:
   peerDependencies:
     webpack: ^4.0.0 || ^5.0.0
   checksum: faf43eecf233f4897b0150aaa874eeeac214e4f9de49738a9e0ef734a30b5260059e85b7edadf852b98e415f875bd5f12587768a93fd52aaf2e479ecf95fab20
+  languageName: node
+  linkType: hard
+
+"file-uri-to-path@npm:1.0.0":
+  version: 1.0.0
+  resolution: "file-uri-to-path@npm:1.0.0"
+  checksum: b648580bdd893a008c92c7ecc96c3ee57a5e7b6c4c18a9a09b44fb5d36d79146f8e442578bc0e173dc027adf3987e254ba1dfd6e3ec998b7c282873010502144
   languageName: node
   linkType: hard
 
@@ -14201,6 +14244,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lru-cache@npm:^10.2.2":
+  version: 10.2.2
+  resolution: "lru-cache@npm:10.2.2"
+  checksum: 98e8fc93691c546f719a76103ef2bee5a3ac823955c755a47641ec41f8c7fafa1baeaba466937cc1cbfa9cfd47e03536d10e2db3158a64ad91ff3a58a32c893e
+  languageName: node
+  linkType: hard
+
 "lru-cache@npm:^5.1.1":
   version: 5.1.1
   resolution: "lru-cache@npm:5.1.1"
@@ -14686,6 +14736,26 @@ __metadata:
   dependencies:
     fs-monkey: 1.0.3
   checksum: 6d2f49d447d1be24ff9c747618933784eeb059189bc6a0d77b7a51c7daf06e2d3a74674a2e2ff1520e2c312bf91e719ed37144cf05087379b3ba0aef0b6aa062
+  languageName: node
+  linkType: hard
+
+"memwatch-next@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "memwatch-next@npm:0.3.0"
+  dependencies:
+    bindings: ^1.2.1
+    nan: ^2.3.2
+    node-gyp: latest
+  checksum: 8dce0cbe483717ad87f12deef1d0fa5a945b5ee1a5c78be51a35c3a29692c355f3c6036ac98e052f65c8169f0b5ab651515189fb1c1d0df1794fdd3b4ecb29ae
+  languageName: node
+  linkType: hard
+
+"memwatch@npm:^0.2.2":
+  version: 0.2.2
+  resolution: "memwatch@npm:0.2.2"
+  dependencies:
+    node-gyp: latest
+  checksum: 85cf5f61def8f58d09b75ed74c4c658bcda70437b43acc6f8ce40cf8e4d03478078fbeae76f6447eee9946a7a04e8612b525b6bbc5442805b3511f9bfa917004
   languageName: node
   linkType: hard
 
@@ -15588,6 +15658,15 @@ __metadata:
   bin:
     multicast-dns: cli.js
   checksum: 45a78628a8f26479c4018122d689a8b22aff034699a1913dac0b9891e4111162b3222c85bba642d624270a90e51129607f1e41aa701e0108cc974246bc9fe828
+  languageName: node
+  linkType: hard
+
+"nan@npm:^2.3.2":
+  version: 2.19.0
+  resolution: "nan@npm:2.19.0"
+  dependencies:
+    node-gyp: latest
+  checksum: 29a894a003c1954c250d690768c30e69cd91017e2e5eb21b294380f7cace425559508f5ffe3e329a751307140b0bd02f83af040740fa4def1a3869be6af39600
   languageName: node
   linkType: hard
 

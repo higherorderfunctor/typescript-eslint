@@ -34,12 +34,15 @@ export type TypeScriptProjectService = ts.server.ProjectService;
 export interface ProjectServiceSettings {
   allowDefaultProject: string[] | undefined;
   maximumDefaultProjectFileMatchCount: number;
-  service: TypeScriptProjectService;
+  service: TypeScriptProjectService & {
+    __opened_lru_cache?: Map<string, ts.server.OpenConfiguredProjectResult>;
+  };
 }
 
 export function createProjectService(
   optionsRaw: boolean | ProjectServiceOptions | undefined,
   jsDocParsingMode: ts.JSDocParsingMode | undefined,
+  parseSettings: { extraFileExtensions: readonly string[] },
 ): ProjectServiceSettings {
   const options = typeof optionsRaw === 'object' ? optionsRaw : {};
   validateDefaultProjectForFilesGlob(options);
@@ -111,6 +114,16 @@ export function createProjectService(
     session: undefined,
     jsDocParsingMode,
   });
+
+  if (parseSettings.extraFileExtensions.length) {
+    service.setHostConfiguration({
+      extraFileExtensions: parseSettings.extraFileExtensions.map(extension => ({
+        extension,
+        isMixedContent: false,
+        scriptKind: tsserver.ScriptKind.Deferred,
+      })),
+    });
+  }
 
   if (options.defaultProject) {
     try {

@@ -1,9 +1,9 @@
 import debug from 'debug';
-import { Path } from 'glob';
+import { diffChars } from 'diff';
+import { LRUCache } from 'lru-cache';
 import { minimatch } from 'minimatch';
 import path from 'path';
 import * as ts from 'typescript';
-import { inspect } from 'util';
 
 import { createProjectProgram } from './create-program/createProjectProgram';
 import type { ProjectServiceSettings } from './create-program/createProjectService';
@@ -17,12 +17,28 @@ const log = debug(
   'typescript-eslint:typescript-estree:useProgramFromProjectService',
 );
 
-const openedFilesCache = new Map<
-  string,
-  ts.server.OpenConfiguredProjectResult
->();
-const programCache = new Map<string, ts.Program>();
-const hostExtraFileExtensionsCache = new Set<string>();
+const getOpenedFilesLruCache = (
+  service: ts.server.ProjectService & {
+    __opened_lru_cache?: Map<string, ts.server.OpenConfiguredProjectResult>;
+  },
+) => {
+  if (!service.__opened_lru_cache) {
+    service.__opened_lru_cache = new LRUCache<
+      string,
+      ts.server.OpenConfiguredProjectResult
+    >({
+      max: 50,
+      dispose: (_, key): void => {
+        log(`LRU: Evicting item with key ${key}`);
+        service.closeClientFile(key);
+        log(`LRU" Item with key ${key} has been evicted`);
+      },
+    });
+  }
+  return service.__opened_lru_cache;
+};
+
+// const programCache = new Map<string, ts.Program>();
 
 const isFileInConfiguredProject = (
   service: ts.server.ProjectService,
@@ -35,6 +51,50 @@ const isFileInConfiguredProject = (
     }
   }
   return false;
+};
+
+interface ContentEdit {
+  start: number;
+  end: number;
+  content: string;
+}
+
+const makeEdits = (oldContent: string, newContent: string): ContentEdit[] => {
+  // log('OLD', oldContent);
+  // log('NEW', newContent)
+  const changes = diffChars(oldContent, newContent);
+  // log(changes);
+  const edits: ContentEdit[] = [];
+
+  let offset = 0;
+  changes.forEach(change => {
+    if (change.removed && change.count !== undefined) {
+      edits.push({
+        start: offset,
+        end: offset + change.count,
+        content: '',
+      });
+      return;
+      // offset += change.count; // Update offset for removed content
+    }
+    if (change.added) {
+      edits.push({
+        start: offset,
+        end: offset,
+        content: change.value,
+      });
+    }
+    if (change.count !== undefined) {
+      edits.push({
+        start: offset,
+        end: offset + change.count,
+        content: change.value,
+      });
+      offset += change.count; // Update offset for unchanged content
+    }
+  });
+  // log('EDITS', edits);
+  return edits;
 };
 
 export function useProgramFromProjectService(
@@ -51,32 +111,13 @@ export function useProgramFromProjectService(
   // See https://github.com/typescript-eslint/typescript-eslint/issues/8519
   const filePathAbsolute = absolutify(parseSettings.filePath);
 
+  const openedFilesCache = getOpenedFilesLruCache(service);
+
   log(
     'Opening project service file for: %s at absolute path %s',
     parseSettings.filePath,
     filePathAbsolute,
   );
-
-  if (parseSettings.extraFileExtensions.length) {
-    log('Adjusting extensions');
-    const extensions = parseSettings.extraFileExtensions.filter(extension => {
-      if (!hostExtraFileExtensionsCache.has(extension)) {
-        log('Adding extension: %s', extension);
-        hostExtraFileExtensionsCache.add(extension);
-        return true;
-      }
-      return false;
-    });
-    if (extensions.length) {
-      service.setHostConfiguration({
-        extraFileExtensions: extensions.map(extension => ({
-          extension,
-          isMixedContent: false,
-          scriptKind: ts.ScriptKind.Deferred,
-        })),
-      });
-    }
-  }
 
   log('Getting script info for: %s', filePathAbsolute);
   const cachedScriptInfo = service.getScriptInfo(filePathAbsolute);
@@ -87,11 +128,21 @@ export function useProgramFromProjectService(
       filePathAbsolute,
     );
 
-    cachedScriptInfo.editContent(
-      0,
-      cachedScriptInfo.getSnapshot().getLength(),
+    // cachedScriptInfo.editContent(
+    //   0,
+    //   cachedScriptInfo.getSnapshot().getLength(),
+    //   parseSettings.codeFullText,
+    // );
+
+    const snapshot = cachedScriptInfo.getSnapshot();
+    const edits = makeEdits(
+      snapshot.getText(0, snapshot.getLength()),
       parseSettings.codeFullText,
     );
+    edits.forEach(({ start, end, content }) => {
+      // log(start, end, content)
+      cachedScriptInfo.editContent(start, end, content);
+    });
 
     // const program = programCache.get(filePathAbsolute);
     // if (program) {
@@ -137,12 +188,12 @@ export function useProgramFromProjectService(
         parseSettings.tsconfigRootDir,
       );
 
-  // if (!isOpened) {
-  log('Opened project service file: %o', opened);
-  openedFilesCache.set(filePathAbsolute, opened);
-  // } else {
-  //   log('Retrieved project service file from cache: %o', opened);
-  // }
+  if (!isOpened) {
+    log('Opened project service file: %o', opened);
+    openedFilesCache.set(filePathAbsolute, opened);
+  } else {
+    log('Retrieved project service file from cache: %o', opened);
+  }
 
   if (hasFullTypeInformation) {
     log(
@@ -175,7 +226,8 @@ export function useProgramFromProjectService(
 
   log('Retrieving script info and then program for: %s', filePathAbsolute);
 
-  const scriptInfo = service.getScriptInfo(filePathAbsolute);
+  const scriptInfo =
+    cachedScriptInfo ?? service.getScriptInfo(filePathAbsolute);
 
   /* eslint-disable @typescript-eslint/no-non-null-assertion */
   const program = service
@@ -189,8 +241,7 @@ export function useProgramFromProjectService(
     return undefined;
   }
 
-  log('Setting program cache for: %s', filePathAbsolute);
-  programCache.set(filePathAbsolute, program);
+  // log('Setting program cache for: %s', filePathAbsolute);
 
   if (!opened.configFileName) {
     defaultProjectMatchedFiles.add(filePathAbsolute);
