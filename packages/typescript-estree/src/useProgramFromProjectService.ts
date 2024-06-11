@@ -22,6 +22,7 @@ const openedFilesCache = new Map<
   ts.server.OpenConfiguredProjectResult
 >();
 const programCache = new Map<string, ts.Program>();
+const hostExtraFileExtensionsCache = new Set<string>();
 
 const isFileInConfiguredProject = (
   service: ts.server.ProjectService,
@@ -57,15 +58,27 @@ export function useProgramFromProjectService(
   );
 
   if (parseSettings.extraFileExtensions.length) {
-    service.setHostConfiguration({
-      extraFileExtensions: parseSettings.extraFileExtensions.map(extension => ({
-        extension,
-        isMixedContent: false,
-        scriptKind: ts.ScriptKind.Deferred,
-      })),
+    log('Adjusting extensions');
+    const extensions = parseSettings.extraFileExtensions.filter(extension => {
+      if (!hostExtraFileExtensionsCache.has(extension)) {
+        log('Adding extension: %s', extension);
+        hostExtraFileExtensionsCache.add(extension);
+        return true;
+      }
+      return false;
     });
+    if (extensions.length) {
+      service.setHostConfiguration({
+        extraFileExtensions: extensions.map(extension => ({
+          extension,
+          isMixedContent: false,
+          scriptKind: ts.ScriptKind.Deferred,
+        })),
+      });
+    }
   }
 
+  log('Getting script info for: %s', filePathAbsolute);
   const cachedScriptInfo = service.getScriptInfo(filePathAbsolute);
 
   if (cachedScriptInfo) {
