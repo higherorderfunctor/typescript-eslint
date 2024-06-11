@@ -5567,17 +5567,41 @@ __metadata:
   dependencies:
     "@jest/types": 29.6.3
     "@prettier/sync": ^0.5.1
-    "@typescript-eslint/rule-tester": 7.12.0
-    "@typescript-eslint/scope-manager": 7.12.0
-    "@typescript-eslint/type-utils": 7.12.0
-    "@typescript-eslint/utils": 7.12.0
+    "@typescript-eslint/rule-tester": "link:../rule-tester"
+    "@typescript-eslint/scope-manager": "link:../scope-manager"
+    "@typescript-eslint/type-utils": "link:../type-utils"
+    "@typescript-eslint/utils": "link:../utils"
     jest: 29.7.0
     prettier: ^3.2.5
     rimraf: "*"
   languageName: unknown
   linkType: soft
 
-"@typescript-eslint/eslint-plugin@7.12.0, @typescript-eslint/eslint-plugin@workspace:packages/eslint-plugin":
+"@typescript-eslint/eslint-plugin@link:../eslint-plugin::locator=%40typescript-eslint%2Frepo-tools%40workspace%3Apackages%2Frepo-tools":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/eslint-plugin@link:../eslint-plugin::locator=%40typescript-eslint%2Frepo-tools%40workspace%3Apackages%2Frepo-tools"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/eslint-plugin@link:../eslint-plugin::locator=%40typescript-eslint%2Fwebsite-eslint%40workspace%3Apackages%2Fwebsite-eslint":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/eslint-plugin@link:../eslint-plugin::locator=%40typescript-eslint%2Fwebsite-eslint%40workspace%3Apackages%2Fwebsite-eslint"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/eslint-plugin@link:../eslint-plugin::locator=typescript-eslint%40workspace%3Apackages%2Ftypescript-eslint":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/eslint-plugin@link:../eslint-plugin::locator=typescript-eslint%40workspace%3Apackages%2Ftypescript-eslint"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/eslint-plugin@link:../eslint-plugin::locator=website%40workspace%3Apackages%2Fwebsite":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/eslint-plugin@link:../eslint-plugin::locator=website%40workspace%3Apackages%2Fwebsite"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/eslint-plugin@workspace:packages/eslint-plugin":
   version: 0.0.0-use.local
   resolution: "@typescript-eslint/eslint-plugin@workspace:packages/eslint-plugin"
   dependencies:
@@ -5586,12 +5610,12 @@ __metadata:
     "@types/marked": ^5.0.2
     "@types/mdast": ^4.0.3
     "@types/natural-compare": "*"
-    "@typescript-eslint/rule-schema-to-typescript-types": 7.12.0
-    "@typescript-eslint/rule-tester": 7.12.0
-    "@typescript-eslint/scope-manager": 7.12.0
-    "@typescript-eslint/type-utils": 7.12.0
-    "@typescript-eslint/utils": 7.12.0
-    "@typescript-eslint/visitor-keys": 7.12.0
+    "@typescript-eslint/rule-schema-to-typescript-types": "link:../rule-schema-to-typescript-types"
+    "@typescript-eslint/rule-tester": "link:../rule-tester"
+    "@typescript-eslint/scope-manager": "link:../scope-manager"
+    "@typescript-eslint/type-utils": "link:../type-utils"
+    "@typescript-eslint/utils": "link:../utils"
+    "@typescript-eslint/visitor-keys": "link:../visitor-keys"
     ajv: ^6.12.6
     cross-env: ^7.0.3
     cross-fetch: "*"
@@ -5636,16 +5660,46 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@typescript-eslint/parser@7.12.0, @typescript-eslint/parser@workspace:packages/parser":
+"@typescript-eslint/parser@link:../parser::locator=%40typescript-eslint%2Frule-tester%40workspace%3Apackages%2Frule-tester":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/parser@link:../parser::locator=%40typescript-eslint%2Frule-tester%40workspace%3Apackages%2Frule-tester"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/parser@link:../parser::locator=%40typescript-eslint%2Ftype-utils%40workspace%3Apackages%2Ftype-utils":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/parser@link:../parser::locator=%40typescript-eslint%2Ftype-utils%40workspace%3Apackages%2Ftype-utils"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/parser@link:../parser::locator=%40typescript-eslint%2Fwebsite-eslint%40workspace%3Apackages%2Fwebsite-eslint":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/parser@link:../parser::locator=%40typescript-eslint%2Fwebsite-eslint%40workspace%3Apackages%2Fwebsite-eslint"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/parser@link:../parser::locator=typescript-eslint%40workspace%3Apackages%2Ftypescript-eslint":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/parser@link:../parser::locator=typescript-eslint%40workspace%3Apackages%2Ftypescript-eslint"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/parser@link:../parser::locator=website%40workspace%3Apackages%2Fwebsite":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/parser@link:../parser::locator=website%40workspace%3Apackages%2Fwebsite"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/parser@workspace:packages/parser":
   version: 0.0.0-use.local
   resolution: "@typescript-eslint/parser@workspace:packages/parser"
   dependencies:
     "@jest/types": 29.6.3
     "@types/glob": "*"
-    "@typescript-eslint/scope-manager": 7.12.0
-    "@typescript-eslint/types": 7.12.0
-    "@typescript-eslint/typescript-estree": 7.12.0
-    "@typescript-eslint/visitor-keys": 7.12.0
+    "@typescript-eslint/scope-manager": "link:../scope-manager"
+    "@typescript-eslint/types": "link:../types"
+    "@typescript-eslint/typescript-estree": "link:../typescript-estree"
+    "@typescript-eslint/visitor-keys": "link:../visitor-keys"
     debug: ^4.3.4
     downlevel-dts: "*"
     glob: "*"
@@ -5667,11 +5721,11 @@ __metadata:
   dependencies:
     "@jest/types": 29.6.3
     "@nx/devkit": "*"
-    "@typescript-eslint/eslint-plugin": 7.12.0
-    "@typescript-eslint/scope-manager": 7.12.0
-    "@typescript-eslint/types": 7.12.0
-    "@typescript-eslint/typescript-estree": 7.12.0
-    "@typescript-eslint/utils": 7.12.0
+    "@typescript-eslint/eslint-plugin": "link:../eslint-plugin"
+    "@typescript-eslint/scope-manager": "link:../scope-manager"
+    "@typescript-eslint/types": "link:../types"
+    "@typescript-eslint/typescript-estree": "link:../typescript-estree"
+    "@typescript-eslint/utils": "link:../utils"
     cross-fetch: "*"
     execa: "*"
     prettier: ^3.2.5
@@ -5681,28 +5735,52 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@typescript-eslint/rule-schema-to-typescript-types@7.12.0, @typescript-eslint/rule-schema-to-typescript-types@workspace:packages/rule-schema-to-typescript-types":
+"@typescript-eslint/rule-schema-to-typescript-types@link:../rule-schema-to-typescript-types::locator=%40typescript-eslint%2Feslint-plugin%40workspace%3Apackages%2Feslint-plugin":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/rule-schema-to-typescript-types@link:../rule-schema-to-typescript-types::locator=%40typescript-eslint%2Feslint-plugin%40workspace%3Apackages%2Feslint-plugin"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/rule-schema-to-typescript-types@link:../rule-schema-to-typescript-types::locator=website%40workspace%3Apackages%2Fwebsite":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/rule-schema-to-typescript-types@link:../rule-schema-to-typescript-types::locator=website%40workspace%3Apackages%2Fwebsite"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/rule-schema-to-typescript-types@workspace:packages/rule-schema-to-typescript-types":
   version: 0.0.0-use.local
   resolution: "@typescript-eslint/rule-schema-to-typescript-types@workspace:packages/rule-schema-to-typescript-types"
   dependencies:
     "@jest/types": 29.6.3
-    "@typescript-eslint/type-utils": 7.12.0
-    "@typescript-eslint/utils": 7.12.0
+    "@typescript-eslint/type-utils": "link:../type-utils"
+    "@typescript-eslint/utils": "link:../utils"
     natural-compare: ^1.4.0
     prettier: ^3.2.5
   languageName: unknown
   linkType: soft
 
-"@typescript-eslint/rule-tester@7.12.0, @typescript-eslint/rule-tester@workspace:packages/rule-tester":
+"@typescript-eslint/rule-tester@link:../rule-tester::locator=%40typescript-eslint%2Feslint-plugin%40workspace%3Apackages%2Feslint-plugin":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/rule-tester@link:../rule-tester::locator=%40typescript-eslint%2Feslint-plugin%40workspace%3Apackages%2Feslint-plugin"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/rule-tester@link:../rule-tester::locator=%40typescript-eslint%2Feslint-plugin-internal%40workspace%3Apackages%2Feslint-plugin-internal":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/rule-tester@link:../rule-tester::locator=%40typescript-eslint%2Feslint-plugin-internal%40workspace%3Apackages%2Feslint-plugin-internal"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/rule-tester@workspace:packages/rule-tester":
   version: 0.0.0-use.local
   resolution: "@typescript-eslint/rule-tester@workspace:packages/rule-tester"
   dependencies:
     "@jest/types": 29.6.3
     "@types/json-stable-stringify-without-jsonify": ^1.0.2
     "@types/lodash.merge": 4.6.9
-    "@typescript-eslint/parser": 7.12.0
-    "@typescript-eslint/typescript-estree": 7.12.0
-    "@typescript-eslint/utils": 7.12.0
+    "@typescript-eslint/parser": "link:../parser"
+    "@typescript-eslint/typescript-estree": "link:../typescript-estree"
+    "@typescript-eslint/utils": "link:../utils"
     ajv: ^6.12.6
     chai: ^4.4.1
     eslint-visitor-keys: ^4.0.0
@@ -5721,21 +5799,46 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@typescript-eslint/scope-manager@7.12.0, @typescript-eslint/scope-manager@workspace:packages/scope-manager":
+"@typescript-eslint/scope-manager@link:../scope-manager::locator=%40typescript-eslint%2Feslint-plugin%40workspace%3Apackages%2Feslint-plugin":
   version: 0.0.0-use.local
-  resolution: "@typescript-eslint/scope-manager@workspace:packages/scope-manager"
-  dependencies:
-    "@jest/types": 29.6.3
-    "@types/glob": "*"
-    "@typescript-eslint/types": 7.12.0
-    "@typescript-eslint/typescript-estree": 7.12.0
-    "@typescript-eslint/visitor-keys": 7.12.0
-    glob: "*"
-    jest-specific-snapshot: "*"
-    make-dir: "*"
-    pretty-format: "*"
-    typescript: "*"
-  languageName: unknown
+  resolution: "@typescript-eslint/scope-manager@link:../scope-manager::locator=%40typescript-eslint%2Feslint-plugin%40workspace%3Apackages%2Feslint-plugin"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/scope-manager@link:../scope-manager::locator=%40typescript-eslint%2Feslint-plugin-internal%40workspace%3Apackages%2Feslint-plugin-internal":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/scope-manager@link:../scope-manager::locator=%40typescript-eslint%2Feslint-plugin-internal%40workspace%3Apackages%2Feslint-plugin-internal"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/scope-manager@link:../scope-manager::locator=%40typescript-eslint%2Fparser%40workspace%3Apackages%2Fparser":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/scope-manager@link:../scope-manager::locator=%40typescript-eslint%2Fparser%40workspace%3Apackages%2Fparser"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/scope-manager@link:../scope-manager::locator=%40typescript-eslint%2Frepo-tools%40workspace%3Apackages%2Frepo-tools":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/scope-manager@link:../scope-manager::locator=%40typescript-eslint%2Frepo-tools%40workspace%3Apackages%2Frepo-tools"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/scope-manager@link:../scope-manager::locator=%40typescript-eslint%2Futils%40workspace%3Apackages%2Futils":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/scope-manager@link:../scope-manager::locator=%40typescript-eslint%2Futils%40workspace%3Apackages%2Futils"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/scope-manager@link:../scope-manager::locator=%40typescript-eslint%2Fwebsite-eslint%40workspace%3Apackages%2Fwebsite-eslint":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/scope-manager@link:../scope-manager::locator=%40typescript-eslint%2Fwebsite-eslint%40workspace%3Apackages%2Fwebsite-eslint"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/scope-manager@link:../scope-manager::locator=website%40workspace%3Apackages%2Fwebsite":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/scope-manager@link:../scope-manager::locator=website%40workspace%3Apackages%2Fwebsite"
+  languageName: node
   linkType: soft
 
 "@typescript-eslint/scope-manager@npm:5.62.0":
@@ -5758,14 +5861,49 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/type-utils@7.12.0, @typescript-eslint/type-utils@workspace:packages/type-utils":
+"@typescript-eslint/scope-manager@workspace:packages/scope-manager":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/scope-manager@workspace:packages/scope-manager"
+  dependencies:
+    "@jest/types": 29.6.3
+    "@types/glob": "*"
+    "@typescript-eslint/types": "link:../types"
+    "@typescript-eslint/typescript-estree": "link:../typescript-estree"
+    "@typescript-eslint/visitor-keys": "link:../visitor-keys"
+    glob: "*"
+    jest-specific-snapshot: "*"
+    make-dir: "*"
+    pretty-format: "*"
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"@typescript-eslint/type-utils@link:../type-utils::locator=%40typescript-eslint%2Feslint-plugin%40workspace%3Apackages%2Feslint-plugin":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/type-utils@link:../type-utils::locator=%40typescript-eslint%2Feslint-plugin%40workspace%3Apackages%2Feslint-plugin"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/type-utils@link:../type-utils::locator=%40typescript-eslint%2Feslint-plugin-internal%40workspace%3Apackages%2Feslint-plugin-internal":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/type-utils@link:../type-utils::locator=%40typescript-eslint%2Feslint-plugin-internal%40workspace%3Apackages%2Feslint-plugin-internal"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/type-utils@link:../type-utils::locator=%40typescript-eslint%2Frule-schema-to-typescript-types%40workspace%3Apackages%2Frule-schema-to-typescript-types":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/type-utils@link:../type-utils::locator=%40typescript-eslint%2Frule-schema-to-typescript-types%40workspace%3Apackages%2Frule-schema-to-typescript-types"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/type-utils@workspace:packages/type-utils":
   version: 0.0.0-use.local
   resolution: "@typescript-eslint/type-utils@workspace:packages/type-utils"
   dependencies:
     "@jest/types": 29.6.3
-    "@typescript-eslint/parser": 7.12.0
-    "@typescript-eslint/typescript-estree": 7.12.0
-    "@typescript-eslint/utils": 7.12.0
+    "@typescript-eslint/parser": "link:../parser"
+    "@typescript-eslint/typescript-estree": "link:../typescript-estree"
+    "@typescript-eslint/utils": "link:../utils"
     ajv: ^6.12.6
     debug: ^4.3.4
     downlevel-dts: "*"
@@ -5780,17 +5918,46 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@typescript-eslint/types@7.12.0, @typescript-eslint/types@workspace:packages/types":
+"@typescript-eslint/types@link:../types::locator=%40typescript-eslint%2Fparser%40workspace%3Apackages%2Fparser":
   version: 0.0.0-use.local
-  resolution: "@typescript-eslint/types@workspace:packages/types"
-  dependencies:
-    "@jest/types": 29.6.3
-    downlevel-dts: "*"
-    prettier: ^3.2.5
-    rimraf: "*"
-    tsx: "*"
-    typescript: "*"
-  languageName: unknown
+  resolution: "@typescript-eslint/types@link:../types::locator=%40typescript-eslint%2Fparser%40workspace%3Apackages%2Fparser"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/types@link:../types::locator=%40typescript-eslint%2Frepo-tools%40workspace%3Apackages%2Frepo-tools":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/types@link:../types::locator=%40typescript-eslint%2Frepo-tools%40workspace%3Apackages%2Frepo-tools"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/types@link:../types::locator=%40typescript-eslint%2Fscope-manager%40workspace%3Apackages%2Fscope-manager":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/types@link:../types::locator=%40typescript-eslint%2Fscope-manager%40workspace%3Apackages%2Fscope-manager"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/types@link:../types::locator=%40typescript-eslint%2Ftypescript-estree%40workspace%3Apackages%2Ftypescript-estree":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/types@link:../types::locator=%40typescript-eslint%2Ftypescript-estree%40workspace%3Apackages%2Ftypescript-estree"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/types@link:../types::locator=%40typescript-eslint%2Futils%40workspace%3Apackages%2Futils":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/types@link:../types::locator=%40typescript-eslint%2Futils%40workspace%3Apackages%2Futils"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/types@link:../types::locator=%40typescript-eslint%2Fvisitor-keys%40workspace%3Apackages%2Fvisitor-keys":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/types@link:../types::locator=%40typescript-eslint%2Fvisitor-keys%40workspace%3Apackages%2Fvisitor-keys"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/types@link:../types::locator=website%40workspace%3Apackages%2Fwebsite":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/types@link:../types::locator=website%40workspace%3Apackages%2Fwebsite"
+  languageName: node
   linkType: soft
 
 "@typescript-eslint/types@npm:5.62.0":
@@ -5806,6 +5973,19 @@ __metadata:
   checksum: 9501b47d7403417af95fc1fb72b2038c5ac46feac0e1598a46bcb43e56a606c387e9dcd8a2a0abe174c91b509f2d2a8078b093786219eb9a01ab2fbf9ee7b684
   languageName: node
   linkType: hard
+
+"@typescript-eslint/types@workspace:packages/types":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/types@workspace:packages/types"
+  dependencies:
+    "@jest/types": 29.6.3
+    downlevel-dts: "*"
+    prettier: ^3.2.5
+    rimraf: "*"
+    tsx: "*"
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
 
 "@typescript-eslint/typescript-eslint@workspace:.":
   version: 0.0.0-use.local
@@ -5879,29 +6059,52 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@typescript-eslint/typescript-estree@7.12.0, @typescript-eslint/typescript-estree@workspace:packages/typescript-estree":
+"@typescript-eslint/typescript-estree@link:../typescript-estree::locator=%40typescript-eslint%2Fparser%40workspace%3Apackages%2Fparser":
   version: 0.0.0-use.local
-  resolution: "@typescript-eslint/typescript-estree@workspace:packages/typescript-estree"
-  dependencies:
-    "@jest/types": 29.6.3
-    "@typescript-eslint/types": 7.12.0
-    "@typescript-eslint/visitor-keys": 7.12.0
-    debug: ^4.3.4
-    glob: "*"
-    globby: ^11.1.0
-    is-glob: ^4.0.3
-    jest: 29.7.0
-    minimatch: ^9.0.4
-    prettier: ^3.2.5
-    rimraf: "*"
-    semver: ^7.6.0
-    tmp: "*"
-    ts-api-utils: ^1.3.0
-    typescript: "*"
-  peerDependenciesMeta:
-    typescript:
-      optional: true
-  languageName: unknown
+  resolution: "@typescript-eslint/typescript-estree@link:../typescript-estree::locator=%40typescript-eslint%2Fparser%40workspace%3Apackages%2Fparser"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/typescript-estree@link:../typescript-estree::locator=%40typescript-eslint%2Frepo-tools%40workspace%3Apackages%2Frepo-tools":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/typescript-estree@link:../typescript-estree::locator=%40typescript-eslint%2Frepo-tools%40workspace%3Apackages%2Frepo-tools"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/typescript-estree@link:../typescript-estree::locator=%40typescript-eslint%2Frule-tester%40workspace%3Apackages%2Frule-tester":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/typescript-estree@link:../typescript-estree::locator=%40typescript-eslint%2Frule-tester%40workspace%3Apackages%2Frule-tester"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/typescript-estree@link:../typescript-estree::locator=%40typescript-eslint%2Fscope-manager%40workspace%3Apackages%2Fscope-manager":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/typescript-estree@link:../typescript-estree::locator=%40typescript-eslint%2Fscope-manager%40workspace%3Apackages%2Fscope-manager"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/typescript-estree@link:../typescript-estree::locator=%40typescript-eslint%2Ftype-utils%40workspace%3Apackages%2Ftype-utils":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/typescript-estree@link:../typescript-estree::locator=%40typescript-eslint%2Ftype-utils%40workspace%3Apackages%2Ftype-utils"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/typescript-estree@link:../typescript-estree::locator=%40typescript-eslint%2Futils%40workspace%3Apackages%2Futils":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/typescript-estree@link:../typescript-estree::locator=%40typescript-eslint%2Futils%40workspace%3Apackages%2Futils"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/typescript-estree@link:../typescript-estree::locator=%40typescript-eslint%2Fwebsite-eslint%40workspace%3Apackages%2Fwebsite-eslint":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/typescript-estree@link:../typescript-estree::locator=%40typescript-eslint%2Fwebsite-eslint%40workspace%3Apackages%2Fwebsite-eslint"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/typescript-estree@link:../typescript-estree::locator=website%40workspace%3Apackages%2Fwebsite":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/typescript-estree@link:../typescript-estree::locator=website%40workspace%3Apackages%2Fwebsite"
+  languageName: node
   linkType: soft
 
 "@typescript-eslint/typescript-estree@npm:5.62.0":
@@ -5941,22 +6144,77 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/utils@7.12.0, @typescript-eslint/utils@workspace:packages/utils":
+"@typescript-eslint/typescript-estree@workspace:packages/typescript-estree":
   version: 0.0.0-use.local
-  resolution: "@typescript-eslint/utils@workspace:packages/utils"
+  resolution: "@typescript-eslint/typescript-estree@workspace:packages/typescript-estree"
   dependencies:
-    "@eslint-community/eslint-utils": ^4.4.0
-    "@typescript-eslint/scope-manager": 7.12.0
-    "@typescript-eslint/types": 7.12.0
-    "@typescript-eslint/typescript-estree": 7.12.0
-    downlevel-dts: "*"
+    "@jest/types": 29.6.3
+    "@typescript-eslint/types": "link:../types"
+    "@typescript-eslint/visitor-keys": "link:../visitor-keys"
+    debug: ^4.3.4
+    glob: "*"
+    globby: ^11.1.0
+    is-glob: ^4.0.3
     jest: 29.7.0
+    minimatch: ^9.0.4
     prettier: ^3.2.5
     rimraf: "*"
+    semver: ^7.6.0
+    tmp: "*"
+    ts-api-utils: ^1.3.0
     typescript: "*"
-  peerDependencies:
-    eslint: ^8.57.0 || ^9.0.0
+  peerDependenciesMeta:
+    typescript:
+      optional: true
   languageName: unknown
+  linkType: soft
+
+"@typescript-eslint/utils@link:../utils::locator=%40typescript-eslint%2Feslint-plugin%40workspace%3Apackages%2Feslint-plugin":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/utils@link:../utils::locator=%40typescript-eslint%2Feslint-plugin%40workspace%3Apackages%2Feslint-plugin"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/utils@link:../utils::locator=%40typescript-eslint%2Feslint-plugin-internal%40workspace%3Apackages%2Feslint-plugin-internal":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/utils@link:../utils::locator=%40typescript-eslint%2Feslint-plugin-internal%40workspace%3Apackages%2Feslint-plugin-internal"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/utils@link:../utils::locator=%40typescript-eslint%2Frepo-tools%40workspace%3Apackages%2Frepo-tools":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/utils@link:../utils::locator=%40typescript-eslint%2Frepo-tools%40workspace%3Apackages%2Frepo-tools"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/utils@link:../utils::locator=%40typescript-eslint%2Frule-schema-to-typescript-types%40workspace%3Apackages%2Frule-schema-to-typescript-types":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/utils@link:../utils::locator=%40typescript-eslint%2Frule-schema-to-typescript-types%40workspace%3Apackages%2Frule-schema-to-typescript-types"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/utils@link:../utils::locator=%40typescript-eslint%2Frule-tester%40workspace%3Apackages%2Frule-tester":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/utils@link:../utils::locator=%40typescript-eslint%2Frule-tester%40workspace%3Apackages%2Frule-tester"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/utils@link:../utils::locator=%40typescript-eslint%2Ftype-utils%40workspace%3Apackages%2Ftype-utils":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/utils@link:../utils::locator=%40typescript-eslint%2Ftype-utils%40workspace%3Apackages%2Ftype-utils"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/utils@link:../utils::locator=typescript-eslint%40workspace%3Apackages%2Ftypescript-eslint":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/utils@link:../utils::locator=typescript-eslint%40workspace%3Apackages%2Ftypescript-eslint"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/utils@link:../utils::locator=website%40workspace%3Apackages%2Fwebsite":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/utils@link:../utils::locator=website%40workspace%3Apackages%2Fwebsite"
+  languageName: node
   linkType: soft
 
 "@typescript-eslint/utils@npm:^5.10.0":
@@ -5994,20 +6252,52 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/visitor-keys@7.12.0, @typescript-eslint/visitor-keys@workspace:packages/visitor-keys":
+"@typescript-eslint/utils@workspace:packages/utils":
   version: 0.0.0-use.local
-  resolution: "@typescript-eslint/visitor-keys@workspace:packages/visitor-keys"
+  resolution: "@typescript-eslint/utils@workspace:packages/utils"
   dependencies:
-    "@jest/types": 29.6.3
-    "@types/eslint-visitor-keys": "*"
-    "@typescript-eslint/types": 7.12.0
+    "@eslint-community/eslint-utils": ^4.4.0
+    "@typescript-eslint/scope-manager": "link:../scope-manager"
+    "@typescript-eslint/types": "link:../types"
+    "@typescript-eslint/typescript-estree": "link:../typescript-estree"
     downlevel-dts: "*"
-    eslint-visitor-keys: ^3.4.3
     jest: 29.7.0
     prettier: ^3.2.5
     rimraf: "*"
     typescript: "*"
+  peerDependencies:
+    eslint: ^8.57.0 || ^9.0.0
   languageName: unknown
+  linkType: soft
+
+"@typescript-eslint/visitor-keys@link:../visitor-keys::locator=%40typescript-eslint%2Feslint-plugin%40workspace%3Apackages%2Feslint-plugin":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/visitor-keys@link:../visitor-keys::locator=%40typescript-eslint%2Feslint-plugin%40workspace%3Apackages%2Feslint-plugin"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/visitor-keys@link:../visitor-keys::locator=%40typescript-eslint%2Fparser%40workspace%3Apackages%2Fparser":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/visitor-keys@link:../visitor-keys::locator=%40typescript-eslint%2Fparser%40workspace%3Apackages%2Fparser"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/visitor-keys@link:../visitor-keys::locator=%40typescript-eslint%2Fscope-manager%40workspace%3Apackages%2Fscope-manager":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/visitor-keys@link:../visitor-keys::locator=%40typescript-eslint%2Fscope-manager%40workspace%3Apackages%2Fscope-manager"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/visitor-keys@link:../visitor-keys::locator=%40typescript-eslint%2Ftypescript-estree%40workspace%3Apackages%2Ftypescript-estree":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/visitor-keys@link:../visitor-keys::locator=%40typescript-eslint%2Ftypescript-estree%40workspace%3Apackages%2Ftypescript-estree"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/visitor-keys@link:../visitor-keys::locator=%40typescript-eslint%2Fwebsite-eslint%40workspace%3Apackages%2Fwebsite-eslint":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/visitor-keys@link:../visitor-keys::locator=%40typescript-eslint%2Fwebsite-eslint%40workspace%3Apackages%2Fwebsite-eslint"
+  languageName: node
   linkType: soft
 
 "@typescript-eslint/visitor-keys@npm:5.62.0":
@@ -6030,16 +6320,38 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/website-eslint@7.12.0, @typescript-eslint/website-eslint@workspace:packages/website-eslint":
+"@typescript-eslint/visitor-keys@workspace:packages/visitor-keys":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/visitor-keys@workspace:packages/visitor-keys"
+  dependencies:
+    "@jest/types": 29.6.3
+    "@types/eslint-visitor-keys": "*"
+    "@typescript-eslint/types": "link:../types"
+    downlevel-dts: "*"
+    eslint-visitor-keys: ^3.4.3
+    jest: 29.7.0
+    prettier: ^3.2.5
+    rimraf: "*"
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"@typescript-eslint/website-eslint@link:../website-eslint::locator=website%40workspace%3Apackages%2Fwebsite":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/website-eslint@link:../website-eslint::locator=website%40workspace%3Apackages%2Fwebsite"
+  languageName: node
+  linkType: soft
+
+"@typescript-eslint/website-eslint@workspace:packages/website-eslint":
   version: 0.0.0-use.local
   resolution: "@typescript-eslint/website-eslint@workspace:packages/website-eslint"
   dependencies:
     "@eslint/js": "*"
-    "@typescript-eslint/eslint-plugin": 7.12.0
-    "@typescript-eslint/parser": 7.12.0
-    "@typescript-eslint/scope-manager": 7.12.0
-    "@typescript-eslint/typescript-estree": 7.12.0
-    "@typescript-eslint/visitor-keys": 7.12.0
+    "@typescript-eslint/eslint-plugin": "link:../eslint-plugin"
+    "@typescript-eslint/parser": "link:../parser"
+    "@typescript-eslint/scope-manager": "link:../scope-manager"
+    "@typescript-eslint/typescript-estree": "link:../typescript-estree"
+    "@typescript-eslint/visitor-keys": "link:../visitor-keys"
     esbuild: ~0.21.0
     eslint: "*"
     esquery: "*"
@@ -19717,9 +20029,9 @@ __metadata:
   resolution: "typescript-eslint@workspace:packages/typescript-eslint"
   dependencies:
     "@jest/types": 29.6.3
-    "@typescript-eslint/eslint-plugin": 7.12.0
-    "@typescript-eslint/parser": 7.12.0
-    "@typescript-eslint/utils": 7.12.0
+    "@typescript-eslint/eslint-plugin": "link:../eslint-plugin"
+    "@typescript-eslint/parser": "link:../parser"
+    "@typescript-eslint/utils": "link:../utils"
     downlevel-dts: "*"
     jest: 29.7.0
     prettier: ^3.2.5
@@ -20429,14 +20741,14 @@ __metadata:
     "@types/mdast": ^4.0.3
     "@types/react": "*"
     "@types/unist": ^3.0.2
-    "@typescript-eslint/eslint-plugin": 7.12.0
-    "@typescript-eslint/parser": 7.12.0
-    "@typescript-eslint/rule-schema-to-typescript-types": 7.12.0
-    "@typescript-eslint/scope-manager": 7.12.0
-    "@typescript-eslint/types": 7.12.0
-    "@typescript-eslint/typescript-estree": 7.12.0
-    "@typescript-eslint/utils": 7.12.0
-    "@typescript-eslint/website-eslint": 7.12.0
+    "@typescript-eslint/eslint-plugin": "link:../eslint-plugin"
+    "@typescript-eslint/parser": "link:../parser"
+    "@typescript-eslint/rule-schema-to-typescript-types": "link:../rule-schema-to-typescript-types"
+    "@typescript-eslint/scope-manager": "link:../scope-manager"
+    "@typescript-eslint/types": "link:../types"
+    "@typescript-eslint/typescript-estree": "link:../typescript-estree"
+    "@typescript-eslint/utils": "link:../utils"
+    "@typescript-eslint/website-eslint": "link:../website-eslint"
     "@uiw/react-shields": 2.0.1
     clsx: ^2.1.0
     copy-webpack-plugin: ^12.0.0

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function -- for TypeScript APIs*/
 import path from 'node:path';
 
+import debug from 'debug';
 import type * as ts from 'typescript/lib/tsserverlibrary';
 
 import type { ProjectServiceOptions } from '../parser-options';
@@ -14,6 +15,16 @@ const doNothing = (): void => {};
 const createStubFileWatcher = (): ts.FileWatcher => ({
   close: doNothing,
 });
+
+const logTsserverErr = debug(
+  'typescript-eslint:typescript-estree:tsserver:err',
+);
+const logTsserverInfo = debug(
+  'typescript-eslint:typescript-estree:tsserver:info',
+);
+const logTsserverPerf = debug(
+  'typescript-eslint:typescript-estree:tsserver:perf',
+);
 
 export type TypeScriptProjectService = ts.server.ProjectService;
 
@@ -49,22 +60,46 @@ export function createProjectService(
     watchFile: createStubFileWatcher,
   };
 
+  const logger: ts.server.Logger = {
+    close: doNothing,
+    endGroup: doNothing,
+    getLogFileName: (): undefined => undefined,
+    // The debug library doesn't use levels without creating a namespace for each.
+    // Log levels are not passed to the writer so we can't forward to a respective namespace.
+    // Supporting would require an additional flag for grainular control.
+    // Defaulting to all levels for now.
+    hasLevel: (): boolean => true,
+    info(s) {
+      this.msg(s, tsserver.server.Msg.Info);
+    },
+    loggingEnabled: (): boolean =>
+      logTsserverInfo.enabled ||
+      logTsserverErr.enabled ||
+      logTsserverPerf.enabled,
+    msg: (s, type) => {
+      switch (type) {
+        case tsserver.server.Msg.Err:
+          logTsserverErr(s);
+          break;
+        case tsserver.server.Msg.Perf:
+          logTsserverPerf(s);
+          break;
+        default:
+          logTsserverInfo(s);
+      }
+    },
+    perftrc(s) {
+      this.msg(s, tsserver.server.Msg.Perf);
+    },
+    startGroup: doNothing,
+  };
+
   const service = new tsserver.server.ProjectService({
     host: system,
     cancellationToken: { isCancellationRequested: (): boolean => false },
     useSingleInferredProject: false,
     useInferredProjectPerProjectRoot: false,
-    logger: {
-      close: doNothing,
-      endGroup: doNothing,
-      getLogFileName: (): undefined => undefined,
-      hasLevel: (): boolean => false,
-      info: doNothing,
-      loggingEnabled: (): boolean => false,
-      msg: doNothing,
-      perftrc: doNothing,
-      startGroup: doNothing,
-    },
+    logger,
     session: undefined,
     jsDocParsingMode,
   });
