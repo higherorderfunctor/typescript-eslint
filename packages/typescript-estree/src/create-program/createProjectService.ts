@@ -6,15 +6,15 @@ import type * as ts from 'typescript/lib/tsserverlibrary';
 
 import type { ProjectServiceOptions } from '../parser-options';
 import { getParsedConfigFile } from './getParsedConfigFile';
+import {
+  saveDirectoryWatchCallback,
+  saveFileWatchCallback,
+} from './getWatchesForProjectService';
 import { validateDefaultProjectForFilesGlob } from './validateDefaultProjectForFilesGlob';
 
 const DEFAULT_PROJECT_MATCHED_FILES_THRESHOLD = 8;
 
 const doNothing = (): void => {};
-
-const createStubFileWatcher = (): ts.FileWatcher => ({
-  close: doNothing,
-});
 
 const logTsserverErr = debug(
   'typescript-eslint:typescript-estree:tsserver:err',
@@ -59,8 +59,8 @@ export function createProjectService(
     clearTimeout,
     setImmediate,
     setTimeout,
-    watchDirectory: createStubFileWatcher,
-    watchFile: createStubFileWatcher,
+    watchDirectory: saveDirectoryWatchCallback,
+    watchFile: saveFileWatchCallback,
   };
 
   const logger: ts.server.Logger = {
@@ -103,6 +103,7 @@ export function createProjectService(
     cancellationToken: { isCancellationRequested: (): boolean => false },
     useSingleInferredProject: false,
     useInferredProjectPerProjectRoot: false,
+    canUseWatchEvents: true,
     logger,
     eventHandler: (e): void => {
       logTsserverEvent(e);

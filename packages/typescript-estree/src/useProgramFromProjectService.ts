@@ -1,17 +1,40 @@
 import debug from 'debug';
+import { Path } from 'glob';
 import { minimatch } from 'minimatch';
 import path from 'path';
-import { ScriptKind } from 'typescript';
+import * as ts from 'typescript';
+import { inspect } from 'util';
 
 import { createProjectProgram } from './create-program/createProjectProgram';
 import type { ProjectServiceSettings } from './create-program/createProjectService';
+import { watches } from './create-program/getWatchesForProjectService';
 import type { ASTAndDefiniteProgram } from './create-program/shared';
+import { getAstFromProgram } from './create-program/shared';
 import { DEFAULT_PROJECT_FILES_ERROR_EXPLANATION } from './create-program/validateDefaultProjectForFilesGlob';
 import type { MutableParseSettings } from './parseSettings';
 
 const log = debug(
   'typescript-eslint:typescript-estree:useProgramFromProjectService',
 );
+
+const openedFilesCache = new Map<
+  string,
+  ts.server.OpenConfiguredProjectResult
+>();
+const programCache = new Map<string, ts.Program>();
+
+const isFileInConfiguredProject = (
+  service: ts.server.ProjectService,
+  filePath: ts.server.NormalizedPath,
+): boolean => {
+  const configuredProjects = service.configuredProjects;
+  for (const project of configuredProjects.values()) {
+    if (project.containsFile(filePath)) {
+      return true;
+    }
+  }
+  return false;
+};
 
 export function useProgramFromProjectService(
   {
@@ -26,6 +49,7 @@ export function useProgramFromProjectService(
   // We don't canonicalize the filename because it caused a performance regression.
   // See https://github.com/typescript-eslint/typescript-eslint/issues/8519
   const filePathAbsolute = absolutify(parseSettings.filePath);
+
   log(
     'Opening project service file for: %s at absolute path %s',
     parseSettings.filePath,
@@ -37,19 +61,74 @@ export function useProgramFromProjectService(
       extraFileExtensions: parseSettings.extraFileExtensions.map(extension => ({
         extension,
         isMixedContent: false,
-        scriptKind: ScriptKind.Deferred,
+        scriptKind: ts.ScriptKind.Deferred,
       })),
     });
   }
 
-  const opened = service.openClientFile(
-    filePathAbsolute,
-    parseSettings.codeFullText,
-    /* scriptKind */ undefined,
-    parseSettings.tsconfigRootDir,
-  );
+  const cachedScriptInfo = service.getScriptInfo(filePathAbsolute);
 
-  log('Opened project service file: %o', opened);
+  if (cachedScriptInfo) {
+    log(
+      'File already opened, sending changes to tsserver: %s',
+      filePathAbsolute,
+    );
+
+    cachedScriptInfo.editContent(
+      0,
+      cachedScriptInfo.getSnapshot().getLength(),
+      parseSettings.codeFullText,
+    );
+
+    const program = programCache.get(filePathAbsolute);
+    if (program) {
+      log('Using cached program to get AST: %s', filePathAbsolute);
+      const ast = getAstFromProgram(program, filePathAbsolute);
+      if (ast) {
+        log('Using AST from cached program: %s', filePathAbsolute);
+        return ast;
+      }
+      log('Failed to get AST from cached program: %s', filePathAbsolute);
+    } else {
+      log('Cached program not found: %s', filePathAbsolute);
+    }
+  }
+
+  const isOpened = openedFilesCache.has(filePathAbsolute);
+  if (!isOpened) {
+    if (
+      !isFileInConfiguredProject(
+        service,
+        ts.server.toNormalizedPath(filePathAbsolute),
+      )
+    ) {
+      log('Orphaned file: %s', filePathAbsolute);
+      const watcher = watches.get(filePathAbsolute);
+      if (watcher?.value != null) {
+        log('Triggering watcher: %s', watcher.path);
+        watcher.value.callback();
+      } else {
+        log('No watcher found for: %s', filePathAbsolute);
+      }
+    }
+  }
+
+  const opened = isOpened
+    ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      openedFilesCache.get(filePathAbsolute)!
+    : service.openClientFile(
+        filePathAbsolute,
+        parseSettings.codeFullText,
+        /* scriptKind */ undefined,
+        parseSettings.tsconfigRootDir,
+      );
+
+  if (!isOpened) {
+    log('Opened project service file: %o', opened);
+    openedFilesCache.set(filePathAbsolute, opened);
+  } else {
+    log('Retrieved project service file from cache: %o', opened);
+  }
 
   if (hasFullTypeInformation) {
     log(
@@ -79,9 +158,11 @@ export function useProgramFromProjectService(
       );
     }
   }
+
   log('Retrieving script info and then program for: %s', filePathAbsolute);
 
   const scriptInfo = service.getScriptInfo(filePathAbsolute);
+
   /* eslint-disable @typescript-eslint/no-non-null-assertion */
   const program = service
     .getDefaultProjectForFile(scriptInfo!.fileName, true)!
@@ -93,6 +174,9 @@ export function useProgramFromProjectService(
     log('Could not find project service program for: %s', filePathAbsolute);
     return undefined;
   }
+
+  log('Setting program cache for: %s', filePathAbsolute);
+  programCache.set(filePathAbsolute, program);
 
   if (!opened.configFileName) {
     defaultProjectMatchedFiles.add(filePathAbsolute);
