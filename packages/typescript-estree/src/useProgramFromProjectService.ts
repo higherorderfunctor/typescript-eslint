@@ -93,18 +93,19 @@ export function useProgramFromProjectService(
       parseSettings.codeFullText,
     );
 
-    const program = programCache.get(filePathAbsolute);
-    if (program) {
-      log('Using cached program to get AST: %s', filePathAbsolute);
-      const ast = getAstFromProgram(program, filePathAbsolute);
-      if (ast) {
-        log('Using AST from cached program: %s', filePathAbsolute);
-        return ast;
-      }
-      log('Failed to get AST from cached program: %s', filePathAbsolute);
-    } else {
-      log('Cached program not found: %s', filePathAbsolute);
-    }
+    // const program = programCache.get(filePathAbsolute);
+    // if (program) {
+    //   log('Using cached program to get AST: %s', filePathAbsolute);
+    //   const ast = getAstFromProgram(program, filePathAbsolute);
+    //   if (ast) {
+    //     log('Using AST from cached program: %s', filePathAbsolute);
+    //     log("AST: %s", inspect(ast, { depth: 10 }));
+    //     return ast;
+    //   }
+    //   log('Failed to get AST from cached program: %s', filePathAbsolute);
+    // } else {
+    //   log('Cached program not found: %s', filePathAbsolute);
+    // }
   }
 
   const isOpened = openedFilesCache.has(filePathAbsolute);
@@ -136,12 +137,12 @@ export function useProgramFromProjectService(
         parseSettings.tsconfigRootDir,
       );
 
-  if (!isOpened) {
-    log('Opened project service file: %o', opened);
-    openedFilesCache.set(filePathAbsolute, opened);
-  } else {
-    log('Retrieved project service file from cache: %o', opened);
-  }
+  // if (!isOpened) {
+  log('Opened project service file: %o', opened);
+  openedFilesCache.set(filePathAbsolute, opened);
+  // } else {
+  //   log('Retrieved project service file from cache: %o', opened);
+  // }
 
   if (hasFullTypeInformation) {
     log(
