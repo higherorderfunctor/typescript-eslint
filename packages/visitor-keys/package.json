@@ -47,7 +47,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@typescript-eslint/types": "7.12.0",
+    "@typescript-eslint/types": "link:../types",
     "eslint-visitor-keys": "^3.4.3"
   },
   "devDependencies": {
