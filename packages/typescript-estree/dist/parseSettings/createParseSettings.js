@@ -80,7 +80,7 @@ function createParseSettings(code, tsestreeOptions = {}) {
         allowDefaultProject: [],
         defaultProject: null,
         maximumOpenFiles: DEFAULT_PROJECT_OPENED_FILES_THRESHOLD,
-        EXPERIMENTAL_editWithDiffs: false,
+        incremental: false,
         maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: DEFAULT_PROJECT_MATCHED_FILES_THRESHOLD,
         ...(typeof tsestreeOptions.projectService === 'object'
             ? tsestreeOptions.projectService

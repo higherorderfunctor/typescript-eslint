@@ -6,7 +6,7 @@ export interface ProjectServiceSettings {
     maximumDefaultProjectFileMatchCount: number;
     service: TypeScriptProjectService;
     maximumOpenFiles: number;
-    editWithDiffs: boolean;
+    incremental: boolean;
 }
 export interface ProjectServiceParseSettings {
     extraFileExtensions?: string[];

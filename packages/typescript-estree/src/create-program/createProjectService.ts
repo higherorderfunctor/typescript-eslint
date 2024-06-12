@@ -35,7 +35,7 @@ export interface ProjectServiceSettings {
   maximumDefaultProjectFileMatchCount: number;
   service: TypeScriptProjectService;
   maximumOpenFiles: number;
-  editWithDiffs: boolean;
+  incremental: boolean;
 }
 
 export interface ProjectServiceParseSettings {
@@ -157,7 +157,7 @@ export function createProjectService(
   return {
     allowDefaultProject: options.allowDefaultProject,
     maximumOpenFiles: options.maximumOpenFiles,
-    editWithDiffs: options.EXPERIMENTAL_editWithDiffs,
+    incremental: options.incremental,
     maximumDefaultProjectFileMatchCount:
       options.maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING,
     service,

@@ -26,7 +26,7 @@ interface ProjectServiceOptions {
     /**
      * Send changes to files as diffs instead of replacing the entire files.
      */
-    EXPERIMENTAL_editWithDiffs?: boolean;
+    incremental?: boolean;
     /**
      * The maximum number of files {@link allowDefaultProject} may match.
      * Each file match slows down linting, so if you do need to use this, please

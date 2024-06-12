@@ -113,7 +113,7 @@ function createProjectService(options, jsDocParsingMode, parseSettings) {
     return {
         allowDefaultProject: options.allowDefaultProject,
         maximumOpenFiles: options.maximumOpenFiles,
-        editWithDiffs: options.EXPERIMENTAL_editWithDiffs,
+        incremental: options.incremental,
         maximumDefaultProjectFileMatchCount: options.maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING,
         service,
     };

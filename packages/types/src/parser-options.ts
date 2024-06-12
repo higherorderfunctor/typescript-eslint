@@ -59,7 +59,7 @@ interface ProjectServiceOptions {
   /**
    * Send changes to files as diffs instead of replacing the entire files.
    */
-  EXPERIMENTAL_editWithDiffs?: boolean;
+  incremental?: boolean;
 
   /**
    * The maximum number of files {@link allowDefaultProject} may match.
