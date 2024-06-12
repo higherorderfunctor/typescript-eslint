@@ -13,13 +13,10 @@ const createProjectProgram_1 = require("./create-program/createProjectProgram");
 const validateDefaultProjectForFilesGlob_1 = require("./create-program/validateDefaultProjectForFilesGlob");
 const log = (0, debug_1.default)('typescript-eslint:typescript-estree:useProgramFromProjectService');
 const logEdits = (0, debug_1.default)('typescript-eslint:typescript-estree:useProgramFromProjectService:editContent');
-const makeOpenedFilesCache = (service, parseSettings) => {
+const makeOpenedFilesCache = (service, options) => {
     if (!service.__opened_lru_cache) {
-        if (!parseSettings.projectService?.maximumOpenFiles) {
-            throw new Error('maximumOpenFiles must be set in parserOptions.projectService');
-        }
         service.__opened_lru_cache = new lru_cache_1.LRUCache({
-            max: parseSettings.projectService.maximumOpenFiles,
+            max: options.max,
             dispose: (_, key) => {
                 log(`Closing project service file: ${key}`);
                 service.closeClientFile(key);
@@ -79,8 +76,10 @@ const makeEdits = (oldContent, newContent) => {
     // }
     // return edits;
 };
-function useProgramFromProjectService({ allowDefaultProject, maximumDefaultProjectFileMatchCount, service, }, parseSettings, hasFullTypeInformation, defaultProjectMatchedFiles) {
-    const openedFilesCache = makeOpenedFilesCache(service, parseSettings);
+function useProgramFromProjectService({ allowDefaultProject, maximumDefaultProjectFileMatchCount, maximumOpenFiles, incremental, service, }, parseSettings, hasFullTypeInformation, defaultProjectMatchedFiles) {
+    const openedFilesCache = makeOpenedFilesCache(service, {
+        max: maximumOpenFiles,
+    });
     // We don't canonicalize the filename because it caused a performance regression.
     // See https://github.com/typescript-eslint/typescript-eslint/issues/8519
     const filePathAbsolute = absolutify(parseSettings.filePath);
@@ -106,16 +105,18 @@ function useProgramFromProjectService({ allowDefaultProject, maximumDefaultProje
     // }
     // when reusing an openClientFile handler, we need to ensure that
     // the file is still open and manually update its contents
-    const cachedScriptInfo = !isOpened ? undefined : service.getScriptInfo(filePathAbsolute);
+    const cachedScriptInfo = !isOpened
+        ? undefined
+        : service.getScriptInfo(filePathAbsolute);
     if (cachedScriptInfo) {
         log('File already opened, sending changes to tsserver: %s', filePathAbsolute);
-        if (parseSettings.projectService?.incremental) {
+        if (incremental) {
             const start = 0;
             const end = cachedScriptInfo.getSnapshot().getLength();
-            logEdits("Sending full content replacement for: %s: %o", filePathAbsolute, {
+            logEdits('Sending full content replacement for: %s: %o', filePathAbsolute, {
                 start,
                 end,
-                content: parseSettings.codeFullText
+                content: parseSettings.codeFullText,
             });
             cachedScriptInfo.editContent(start, end, parseSettings.codeFullText);
         }
@@ -123,7 +124,7 @@ function useProgramFromProjectService({ allowDefaultProject, maximumDefaultProje
             const snapshot = cachedScriptInfo.getSnapshot();
             const edits = makeEdits(snapshot.getText(0, snapshot.getLength()), parseSettings.codeFullText);
             edits.forEach(({ start, end, content }) => {
-                logEdits("Sending edit for: %s: %o", { start, end, content });
+                logEdits('Sending edit for: %s: %o', { start, end, content });
                 cachedScriptInfo.editContent(start, end, content);
             });
         }
@@ -133,13 +134,12 @@ function useProgramFromProjectService({ allowDefaultProject, maximumDefaultProje
             openedFilesCache.get(filePathAbsolute)
         : service.openClientFile(filePathAbsolute, parseSettings.codeFullText, 
         /* scriptKind */ undefined, parseSettings.tsconfigRootDir);
-    if (isOpened) {
-        log('Retrieved project service file from cache: %o', opened);
-    }
-    else {
+    if (!isOpened) {
         openedFilesCache.set(filePathAbsolute, opened);
-        log('Opened project service file: %o', opened);
     }
+    log('%s (%s/%s): %o', isOpened
+        ? 'Reusing project service file from cache'
+        : 'Opened project service file', service.openFiles.size, maximumOpenFiles, opened);
     if (hasFullTypeInformation) {
         log('Project service type information enabled; checking for file path match on: %o', allowDefaultProject);
         const isDefaultProjectAllowedPath = filePathMatchedBy(parseSettings.filePath, allowDefaultProject);
