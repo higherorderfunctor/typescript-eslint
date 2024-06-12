@@ -54,8 +54,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@typescript-eslint/types": "workspace:^",
-    "@typescript-eslint/visitor-keys": "workspace:^",
+    "@typescript-eslint/types": "link:../types",
+    "@typescript-eslint/visitor-keys": "link:../visitor-keys",
     "debug": "^4.3.4",
     "diff": "^5.2.0",
     "globby": "^11.1.0",

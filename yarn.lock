@@ -5839,6 +5839,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@typescript-eslint/types@link:../types::locator=%40typescript-eslint%2Ftypescript-estree%40workspace%3Apackages%2Ftypescript-estree":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/types@link:../types::locator=%40typescript-eslint%2Ftypescript-estree%40workspace%3Apackages%2Ftypescript-estree"
+  languageName: node
+  linkType: soft
+
 "@typescript-eslint/types@npm:5.62.0":
   version: 5.62.0
   resolution: "@typescript-eslint/types@npm:5.62.0"
@@ -5981,8 +5987,8 @@ __metadata:
   dependencies:
     "@jest/types": 29.6.3
     "@types/diff": ^5.2.1
-    "@typescript-eslint/types": "workspace:^"
-    "@typescript-eslint/visitor-keys": "workspace:^"
+    "@typescript-eslint/types": "link:../types"
+    "@typescript-eslint/visitor-keys": "link:../visitor-keys"
     debug: ^4.3.4
     diff: ^5.2.0
     glob: "*"
@@ -6054,6 +6060,12 @@ __metadata:
   peerDependencies:
     eslint: ^8.57.0 || ^9.0.0
   languageName: unknown
+  linkType: soft
+
+"@typescript-eslint/visitor-keys@link:../visitor-keys::locator=%40typescript-eslint%2Ftypescript-estree%40workspace%3Apackages%2Ftypescript-estree":
+  version: 0.0.0-use.local
+  resolution: "@typescript-eslint/visitor-keys@link:../visitor-keys::locator=%40typescript-eslint%2Ftypescript-estree%40workspace%3Apackages%2Ftypescript-estree"
+  languageName: node
   linkType: soft
 
 "@typescript-eslint/visitor-keys@npm:5.62.0":

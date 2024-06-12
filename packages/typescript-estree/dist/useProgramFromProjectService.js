@@ -10,10 +10,13 @@ const lru_cache_1 = require("lru-cache");
 const minimatch_1 = require("minimatch");
 const path_1 = __importDefault(require("path"));
 const createProjectProgram_1 = require("./create-program/createProjectProgram");
+const getWatchesForProjectService_1 = require("./create-program/getWatchesForProjectService");
 const validateDefaultProjectForFilesGlob_1 = require("./create-program/validateDefaultProjectForFilesGlob");
 const log = (0, debug_1.default)('typescript-eslint:typescript-estree:useProgramFromProjectService');
 const logEdits = (0, debug_1.default)('typescript-eslint:typescript-estree:useProgramFromProjectService:editContent');
-const makeOpenedFilesCache = (service, options) => {
+// "@typescript-eslint/types": "higherorderfunctor/typescript-eslint#patches2upstream&path:packages/types",
+// "@typescript-eslint/typescript-estree": "higherorderfunctor/typescript-eslint#patches2upstream&path:packages/typescript-estree",
+const getOrCreateOpenedFilesCache = (service, options) => {
     if (!service.__opened_lru_cache) {
         service.__opened_lru_cache = new lru_cache_1.LRUCache({
             max: options.max,
@@ -36,73 +39,46 @@ const filePathMatchedByConfiguredProject = (service, filePath) => {
 };
 const makeEdits = (oldContent, newContent) => {
     const changes = (0, diff_1.diffChars)(oldContent, newContent);
-    // const edits: ContentEdit[] = [];
+    const edits = [];
     let offset = 0;
-    return changes.map(change => {
-        const edit = {
-            start: offset,
-            end: change.added ? offset : offset + (change.count ?? 0),
-            content: change.value,
-        };
-        if (!(change.added || change.removed)) {
-            offset += change.count ?? 0;
+    changes.forEach(change => {
+        if (change.count === undefined) {
+            return;
         }
-        return edit;
+        edits.push({
+            start: offset,
+            end: change.added ? offset : offset + change.count,
+            content: change.removed ? '' : change.value,
+        });
+        if (!change.removed) {
+            offset += change.count;
+        }
     });
-    // delete
-    // if (change.removed && change.count !== undefined) {
-    //   edits.push({
-    //     start: offset,
-    //     end: offset + change.count,
-    //     content: change.value, //'',
-    //   });
-    //   return;
-    // }
-    // // insert
-    // if (change.added) {
-    //   edits.push({
-    //     start: offset,
-    //     end: offset,
-    //     content: change.value,
-    //   });
-    // }
-    // if (change.count !== undefined) {
-    //   edits.push({
-    //     start: offset,
-    //     end: offset + change.count,
-    //     content: change.value,
-    //   });
-    //   offset += change.count;
-    // }
-    // return edits;
+    return edits;
 };
 function useProgramFromProjectService({ allowDefaultProject, maximumDefaultProjectFileMatchCount, maximumOpenFiles, incremental, service, }, parseSettings, hasFullTypeInformation, defaultProjectMatchedFiles) {
-    const openedFilesCache = makeOpenedFilesCache(service, {
+    const openedFilesCache = getOrCreateOpenedFilesCache(service, {
         max: maximumOpenFiles,
     });
     // We don't canonicalize the filename because it caused a performance regression.
     // See https://github.com/typescript-eslint/typescript-eslint/issues/8519
     const filePathAbsolute = absolutify(parseSettings.filePath);
-    const isFileInConfiguredProject = filePathMatchedByConfiguredProject(service, filePathAbsolute);
     log('Opening project service file for: %s at absolute path %s', parseSettings.filePath, filePathAbsolute);
     const isOpened = openedFilesCache.has(filePathAbsolute);
-    // if (!isOpened) {
-    //   if (
-    //     !isFileInConfiguredProject(
-    //       service,
-    //       ts.server.toNormalizedPath(filePathAbsolute),
-    //     )
-    //   ) {
-    //     log('Orphaned file: %s', filePathAbsolute);
-    //     const watcher = watches.get(filePathAbsolute);
-    //     if (watcher?.value != null) {
-    //       log('Triggering watcher: %s', watcher.path);
-    //       watcher.value.callback();
-    //     } else {
-    //       log('No watcher found for: %s', filePathAbsolute);
-    //     }
-    //   }
-    // }
+    if (!isOpened) {
+        if (!filePathMatchedByConfiguredProject(service, filePathAbsolute)) {
+            log('Orphaned file: %s', filePathAbsolute);
+            const watcher = getWatchesForProjectService_1.watches.get(filePathAbsolute);
+            if (watcher?.value != null) {
+                log('Triggering watcher: %s', watcher.path);
+                watcher.value.callback();
+            }
+            else {
+                log('No watcher found for: %s', filePathAbsolute);
+            }
+        }
+    }
+    const isFileInConfiguredProject = filePathMatchedByConfiguredProject(service, filePathAbsolute);
     // when reusing an openClientFile handler, we need to ensure that
     // the file is still open and manually update its contents
     const cachedScriptInfo = !isOpened
@@ -110,24 +86,24 @@ function useProgramFromProjectService({ allowDefaultProject, maximumDefaultProje
         : service.getScriptInfo(filePathAbsolute);
     if (cachedScriptInfo) {
         log('File already opened, sending changes to tsserver: %s', filePathAbsolute);
-        if (incremental) {
-            const start = 0;
-            const end = cachedScriptInfo.getSnapshot().getLength();
-            logEdits('Sending full content replacement for: %s: %o', filePathAbsolute, {
+        const snapshot = cachedScriptInfo.getSnapshot();
+        const edits = incremental
+            ? makeEdits(snapshot.getText(0, snapshot.getLength()), parseSettings.codeFullText)
+            : [
+                {
+                    start: 0,
+                    end: snapshot.getLength(),
+                    content: parseSettings.codeFullText,
+                },
+            ];
+        edits.forEach(({ start, end, content }) => {
+            logEdits('Sending %s edit for: %s: %o', incremental ? 'incremental' : 'full', filePathAbsolute, {
                 start,
                 end,
-                content: parseSettings.codeFullText,
+                content,
             });
-            cachedScriptInfo.editContent(start, end, parseSettings.codeFullText);
-        }
-        else {
-            const snapshot = cachedScriptInfo.getSnapshot();
-            const edits = makeEdits(snapshot.getText(0, snapshot.getLength()), parseSettings.codeFullText);
-            edits.forEach(({ start, end, content }) => {
-                logEdits('Sending edit for: %s: %o', { start, end, content });
-                cachedScriptInfo.editContent(start, end, content);
-            });
-        }
+            cachedScriptInfo.editContent(start, end, content);
+        });
     }
     const opened = isOpened
         ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -140,6 +116,15 @@ function useProgramFromProjectService({ allowDefaultProject, maximumDefaultProje
     log('%s (%s/%s): %o', isOpened
         ? 'Reusing project service file from cache'
         : 'Opened project service file', service.openFiles.size, maximumOpenFiles, opened);
+    // FIXME: can at least notify the user instead of getting stuck waiting
+    if (opened.configFileName === undefined) {
+        // parse settings does not always contain extraFileExtensions when set and re-running seems to fix
+        // could just be my complex config file, by trying to catch to track
+        debug_1.default.enable("typescript-eslint:typescript-estree:useProgramFromProjectService");
+        log('Inferred project issue, try re-running eslint: %s: isFileInConfiguredProject=%s: %o: %o', filePathAbsolute, isFileInConfiguredProject, parseSettings, cachedScriptInfo);
+        // eslint-disable-next-line no-process-exit
+        process.exit(1);
+    }
     if (hasFullTypeInformation) {
         log('Project service type information enabled; checking for file path match on: %o', allowDefaultProject);
         const isDefaultProjectAllowedPath = filePathMatchedBy(parseSettings.filePath, allowDefaultProject);

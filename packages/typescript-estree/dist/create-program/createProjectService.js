@@ -8,6 +8,7 @@ exports.createProjectService = void 0;
 const node_path_1 = __importDefault(require("node:path"));
 const debug_1 = __importDefault(require("debug"));
 const getParsedConfigFile_1 = require("./getParsedConfigFile");
+const getWatchesForProjectService_1 = require("./getWatchesForProjectService");
 const validateDefaultProjectForFilesGlob_1 = require("./validateDefaultProjectForFilesGlob");
 const log = (0, debug_1.default)('typescript-eslint:typescript-estree:createProjectService');
 const logTsserverErr = (0, debug_1.default)('typescript-eslint:typescript-estree:tsserver:err');
@@ -15,9 +16,6 @@ const logTsserverInfo = (0, debug_1.default)('typescript-eslint:typescript-estre
 const logTsserverPerf = (0, debug_1.default)('typescript-eslint:typescript-estree:tsserver:perf');
 const logTsserverEvent = (0, debug_1.default)('typescript-eslint:typescript-estree:tsserver:event');
 const doNothing = () => { };
-const createStubFileWatcher = () => ({
-    close: doNothing,
-});
 function createProjectService(options, jsDocParsingMode, parseSettings) {
     (0, validateDefaultProjectForFilesGlob_1.validateDefaultProjectForFilesGlob)(options);
     // We import this lazily to avoid its cost for users who don't use the service
@@ -34,8 +32,8 @@ function createProjectService(options, jsDocParsingMode, parseSettings) {
         clearTimeout,
         setImmediate,
         setTimeout,
-        watchDirectory: createStubFileWatcher,
-        watchFile: createStubFileWatcher,
+        watchDirectory: getWatchesForProjectService_1.saveDirectoryWatchCallback,
+        watchFile: getWatchesForProjectService_1.saveFileWatchCallback,
     };
     const logger = {
         close: doNothing,
@@ -78,12 +76,14 @@ function createProjectService(options, jsDocParsingMode, parseSettings) {
         useSingleInferredProject: false,
         useInferredProjectPerProjectRoot: false,
         logger,
-        eventHandler: (e) => {
-            logTsserverEvent(e);
-        },
+        eventHandler: logTsserverEvent.enabled
+            ? (e) => { logTsserverEvent(e); }
+            : undefined,
         session: undefined,
+        canUseWatchEvents: true,
         jsDocParsingMode,
     });
+    log("TEST: %o", parseSettings);
     if (parseSettings?.extraFileExtensions?.length) {
         log('Enabling extra file extensions: %s', parseSettings.extraFileExtensions);
         service.setHostConfiguration({

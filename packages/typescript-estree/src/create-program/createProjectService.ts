@@ -6,6 +6,10 @@ import type * as ts from 'typescript/lib/tsserverlibrary';
 
 import type { ProjectServiceOptions } from '../parser-options';
 import { getParsedConfigFile } from './getParsedConfigFile';
+import {
+  saveDirectoryWatchCallback,
+  saveFileWatchCallback,
+} from './getWatchesForProjectService';
 import { validateDefaultProjectForFilesGlob } from './validateDefaultProjectForFilesGlob';
 
 const log = debug('typescript-eslint:typescript-estree:createProjectService');
@@ -23,10 +27,6 @@ const logTsserverEvent = debug(
 );
 
 const doNothing = (): void => {};
-
-const createStubFileWatcher = (): ts.FileWatcher => ({
-  close: doNothing,
-});
 
 export type TypeScriptProjectService = ts.server.ProjectService;
 
@@ -64,8 +64,8 @@ export function createProjectService(
     clearTimeout,
     setImmediate,
     setTimeout,
-    watchDirectory: createStubFileWatcher,
-    watchFile: createStubFileWatcher,
+    watchDirectory: saveDirectoryWatchCallback,
+    watchFile: saveFileWatchCallback,
   };
 
   const logger: ts.server.Logger = {
@@ -111,13 +111,17 @@ export function createProjectService(
     useSingleInferredProject: false,
     useInferredProjectPerProjectRoot: false,
     logger,
-    eventHandler: (e): void => {
-      logTsserverEvent(e);
-    },
+    eventHandler: logTsserverEvent.enabled
+      ? (e): void => {
+          logTsserverEvent(e);
+        }
+      : undefined,
     session: undefined,
+    canUseWatchEvents: true,
     jsDocParsingMode,
   });
 
+  log('TEST: %o', parseSettings);
   if (parseSettings?.extraFileExtensions?.length) {
     log(
       'Enabling extra file extensions: %s',

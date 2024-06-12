@@ -7,6 +7,7 @@ import type * as ts from 'typescript';
 
 import { createProjectProgram } from './create-program/createProjectProgram';
 import type { ProjectServiceSettings } from './create-program/createProjectService';
+import { watches } from './create-program/getWatchesForProjectService';
 import type { ASTAndDefiniteProgram } from './create-program/shared';
 import { DEFAULT_PROJECT_FILES_ERROR_EXPLANATION } from './create-program/validateDefaultProjectForFilesGlob';
 import type { MutableParseSettings } from './parseSettings';
@@ -18,7 +19,10 @@ const logEdits = debug(
   'typescript-eslint:typescript-estree:useProgramFromProjectService:editContent',
 );
 
-const makeOpenedFilesCache = (
+// "@typescript-eslint/types": "higherorderfunctor/typescript-eslint#patches2upstream&path:packages/types",
+// "@typescript-eslint/typescript-estree": "higherorderfunctor/typescript-eslint#patches2upstream&path:packages/typescript-estree",
+
+const getOrCreateOpenedFilesCache = (
   service: ts.server.ProjectService & {
     __opened_lru_cache?: Map<string, ts.server.OpenConfiguredProjectResult>;
   },
@@ -59,85 +63,27 @@ interface ContentEdit {
   end: number;
   content: string;
 }
+
 const makeEdits = (oldContent: string, newContent: string): ContentEdit[] => {
-  // log('OLD', oldContent);
-  // log('NEW', newContent)
   const changes = diffChars(oldContent, newContent);
-  // log(changes);
   const edits: ContentEdit[] = [];
 
   let offset = 0;
   changes.forEach(change => {
-    if (change.removed && change.count !== undefined) {
-      edits.push({
-        start: offset,
-        end: offset + change.count,
-        content: '',
-      });
+    if (change.count === undefined) {
       return;
-      // offset += change.count; // Update offset for removed content
     }
-    if (change.added) {
-      edits.push({
-        start: offset,
-        end: offset,
-        content: change.value,
-      });
-    }
-    if (change.count !== undefined) {
-      edits.push({
-        start: offset,
-        end: offset + change.count,
-        content: change.value,
-      });
-      offset += change.count; // Update offset for unchanged content
+    edits.push({
+      start: offset,
+      end: change.added ? offset : offset + change.count,
+      content: change.removed ? '' : change.value,
+    });
+    if (!change.removed) {
+      offset += change.count;
     }
   });
-  // log('EDITS', edits);
   return edits;
 };
-// const makeEdits = (oldContent: string, newContent: string): ContentEdit[] => {
-//   const changes = diffChars(oldContent, newContent);
-//   // const edits: ContentEdit[] = [];
-//   let offset = 0;
-//   return changes.map(change => {
-//     const edit = {
-//       start: offset,
-//       end: change.added ? offset : offset + (change.count ?? 0),
-//       content: change.value,
-//     };
-//     if (!(change.added || change.removed)) {
-//       offset += change.count ?? 0;
-//     }
-//     return edit;
-//   });
-//   // delete
-//   // if (change.removed && change.count !== undefined) {
-//   //   edits.push({
-//   //     start: offset,
-//   //     end: offset + change.count,
-//   //     content: change.value, //'',
-//   //   });
-//   //   return;
-//   // }
-//   // // insert
-//   // if (change.added) {
-//   //   edits.push({
-//   //     start: offset,
-//   //     end: offset,
-//   //     content: change.value,
-//   //   });
-//   // }
-//   // if (change.count !== undefined) {
-//   //   edits.push({
-//   //     start: offset,
-//   //     end: offset + change.count,
-//   //     content: change.value,
-//   //   });
-//   //   offset += change.count;
-//   // }
-//   // return edits;
-// };
 
 export function useProgramFromProjectService(
   {
@@ -151,18 +97,13 @@ export function useProgramFromProjectService(
   hasFullTypeInformation: boolean,
   defaultProjectMatchedFiles: Set<string>,
 ): ASTAndDefiniteProgram | undefined {
-  const openedFilesCache = makeOpenedFilesCache(service, {
+  const openedFilesCache = getOrCreateOpenedFilesCache(service, {
     max: maximumOpenFiles,
   });
 
   // We don't canonicalize the filename because it caused a performance regression.
   // See https://github.com/typescript-eslint/typescript-eslint/issues/8519
   const filePathAbsolute = absolutify(parseSettings.filePath);
-
-  const isFileInConfiguredProject = filePathMatchedByConfiguredProject(
-    service,
-    filePathAbsolute,
-  );
 
   log(
     'Opening project service file for: %s at absolute path %s',
@@ -171,23 +112,23 @@ export function useProgramFromProjectService(
   );
 
   const isOpened = openedFilesCache.has(filePathAbsolute);
-  // if (!isOpened) {
-  //   if (
-  //     !isFileInConfiguredProject(
-  //       service,
-  //       ts.server.toNormalizedPath(filePathAbsolute),
-  //     )
-  //   ) {
-  //     log('Orphaned file: %s', filePathAbsolute);
-  //     const watcher = watches.get(filePathAbsolute);
-  //     if (watcher?.value != null) {
-  //       log('Triggering watcher: %s', watcher.path);
-  //       watcher.value.callback();
-  //     } else {
-  //       log('No watcher found for: %s', filePathAbsolute);
-  //     }
-  //   }
-  // }
+  if (!isOpened) {
+    if (!filePathMatchedByConfiguredProject(service, filePathAbsolute)) {
+      log('Orphaned file: %s', filePathAbsolute);
+      const watcher = watches.get(filePathAbsolute);
+      if (watcher?.value != null) {
+        log('Triggering watcher: %s', watcher.path);
+        watcher.value.callback();
+      } else {
+        log('No watcher found for: %s', filePathAbsolute);
+      }
+    }
+  }
+
+  const isFileInConfiguredProject = filePathMatchedByConfiguredProject(
+    service,
+    filePathAbsolute,
+  );
 
   // when reusing an openClientFile handler, we need to ensure that
   // the file is still open and manually update its contents
@@ -214,16 +155,20 @@ export function useProgramFromProjectService(
             content: parseSettings.codeFullText,
           },
         ];
-    if (incremental) {
-      edits.forEach(({ start, end, content }) => {
-        logEdits('Sending edit for: %s: %o', filePathAbsolute, {
+
+    edits.forEach(({ start, end, content }) => {
+      logEdits(
+        'Sending %s edit for: %s: %o',
+        incremental ? 'incremental' : 'full',
+        filePathAbsolute,
+        {
           start,
           end,
           content,
-        });
-        cachedScriptInfo.editContent(start, end, content);
-      });
-    }
+        },
+      );
+      cachedScriptInfo.editContent(start, end, content);
+    });
   }
 
   const opened = isOpened
@@ -249,6 +194,24 @@ export function useProgramFromProjectService(
     maximumOpenFiles,
     opened,
   );
+
+  // FIXME: can at least notify the user instead of getting stuck waiting
+  if (opened.configFileName === undefined) {
+    // parse settings does not always contain extraFileExtensions when set and re-running seems to fix
+    // could just be my complex config file, by trying to catch to track
+    debug.enable(
+      'typescript-eslint:typescript-estree:useProgramFromProjectService',
+    );
+    log(
+      'Inferred project issue, try re-running eslint: %s: isFileInConfiguredProject=%s: %o: %o',
+      filePathAbsolute,
+      isFileInConfiguredProject,
+      parseSettings,
+      cachedScriptInfo,
+    );
+    // eslint-disable-next-line no-process-exit
+    process.exit(1);
+  }
 
   if (hasFullTypeInformation) {
     log(
