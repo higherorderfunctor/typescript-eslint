@@ -68,9 +68,9 @@
   },
   "dependencies": {
     "@eslint-community/eslint-utils": "^4.4.0",
-    "@typescript-eslint/scope-manager": "7.13.0",
-    "@typescript-eslint/types": "7.13.0",
-    "@typescript-eslint/typescript-estree": "7.13.0"
+    "@typescript-eslint/scope-manager": "workspace:^",
+    "@typescript-eslint/types": "workspace:^",
+    "@typescript-eslint/typescript-estree": "workspace:^"
   },
   "peerDependencies": {
     "eslint": "^8.57.0 || ^9.0.0"

@@ -52,9 +52,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@typescript-eslint/eslint-plugin": "7.13.0",
-    "@typescript-eslint/parser": "7.13.0",
-    "@typescript-eslint/utils": "7.13.0"
+    "@typescript-eslint/eslint-plugin": "workspace:^",
+    "@typescript-eslint/parser": "workspace:^",
+    "@typescript-eslint/utils": "workspace:^"
   },
   "devDependencies": {
     "@jest/types": "29.6.3",
