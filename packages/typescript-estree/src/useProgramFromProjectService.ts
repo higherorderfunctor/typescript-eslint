@@ -59,49 +59,85 @@ interface ContentEdit {
   end: number;
   content: string;
 }
-
 const makeEdits = (oldContent: string, newContent: string): ContentEdit[] => {
+  // log('OLD', oldContent);
+  // log('NEW', newContent)
   const changes = diffChars(oldContent, newContent);
-  // const edits: ContentEdit[] = [];
+  // log(changes);
+  const edits: ContentEdit[] = [];
+
   let offset = 0;
-  return changes.map(change => {
-    const edit = {
-      start: offset,
-      end: change.added ? offset : offset + (change.count ?? 0),
-      content: change.value,
-    };
-    if (!(change.added || change.removed)) {
-      offset += change.count ?? 0;
+  changes.forEach(change => {
+    if (change.removed && change.count !== undefined) {
+      edits.push({
+        start: offset,
+        end: offset + change.count,
+        content: '',
+      });
+      return;
+      // offset += change.count; // Update offset for removed content
     }
-    return edit;
+    if (change.added) {
+      edits.push({
+        start: offset,
+        end: offset,
+        content: change.value,
+      });
+    }
+    if (change.count !== undefined) {
+      edits.push({
+        start: offset,
+        end: offset + change.count,
+        content: change.value,
+      });
+      offset += change.count; // Update offset for unchanged content
+    }
   });
-  // delete
-  // if (change.removed && change.count !== undefined) {
-  //   edits.push({
-  //     start: offset,
-  //     end: offset + change.count,
-  //     content: change.value, //'',
-  //   });
-  //   return;
-  // }
-  // // insert
-  // if (change.added) {
-  //   edits.push({
-  //     start: offset,
-  //     end: offset,
-  //     content: change.value,
-  //   });
-  // }
-  // if (change.count !== undefined) {
-  //   edits.push({
-  //     start: offset,
-  //     end: offset + change.count,
-  //     content: change.value,
-  //   });
-  //   offset += change.count;
-  // }
-  // return edits;
+  // log('EDITS', edits);
+  return edits;
 };
+// const makeEdits = (oldContent: string, newContent: string): ContentEdit[] => {
+//   const changes = diffChars(oldContent, newContent);
+//   // const edits: ContentEdit[] = [];
+//   let offset = 0;
+//   return changes.map(change => {
+//     const edit = {
+//       start: offset,
+//       end: change.added ? offset : offset + (change.count ?? 0),
+//       content: change.value,
+//     };
+//     if (!(change.added || change.removed)) {
+//       offset += change.count ?? 0;
+//     }
+//     return edit;
+//   });
+//   // delete
+//   // if (change.removed && change.count !== undefined) {
+//   //   edits.push({
+//   //     start: offset,
+//   //     end: offset + change.count,
+//   //     content: change.value, //'',
+//   //   });
+//   //   return;
+//   // }
+//   // // insert
+//   // if (change.added) {
+//   //   edits.push({
+//   //     start: offset,
+//   //     end: offset,
+//   //     content: change.value,
+//   //   });
+//   // }
+//   // if (change.count !== undefined) {
+//   //   edits.push({
+//   //     start: offset,
+//   //     end: offset + change.count,
+//   //     content: change.value,
+//   //   });
+//   //   offset += change.count;
+//   // }
+//   // return edits;
+// };
 
 export function useProgramFromProjectService(
   {
@@ -165,27 +201,26 @@ export function useProgramFromProjectService(
       filePathAbsolute,
     );
 
+    const snapshot = cachedScriptInfo.getSnapshot();
+    const edits = incremental
+      ? makeEdits(
+          snapshot.getText(0, snapshot.getLength()),
+          parseSettings.codeFullText,
+        )
+      : [
+          {
+            start: 0,
+            end: snapshot.getLength(),
+            content: parseSettings.codeFullText,
+          },
+        ];
     if (incremental) {
-      const start = 0;
-      const end = cachedScriptInfo.getSnapshot().getLength();
-      logEdits(
-        'Sending full content replacement for: %s: %o',
-        filePathAbsolute,
-        {
+      edits.forEach(({ start, end, content }) => {
+        logEdits('Sending edit for: %s: %o', filePathAbsolute, {
           start,
           end,
-          content: parseSettings.codeFullText,
-        },
-      );
-      cachedScriptInfo.editContent(start, end, parseSettings.codeFullText);
-    } else {
-      const snapshot = cachedScriptInfo.getSnapshot();
-      const edits = makeEdits(
-        snapshot.getText(0, snapshot.getLength()),
-        parseSettings.codeFullText,
-      );
-      edits.forEach(({ start, end, content }) => {
-        logEdits('Sending edit for: %s: %o', { start, end, content });
+          content,
+        });
         cachedScriptInfo.editContent(start, end, content);
       });
     }
