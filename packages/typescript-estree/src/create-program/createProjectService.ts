@@ -10,6 +10,7 @@ import { validateDefaultProjectForFilesGlob } from './validateDefaultProjectForF
 
 const DEFAULT_PROJECT_MATCHED_FILES_THRESHOLD = 8;
 
+const log = debug('typescript-eslint:typescript-estree:createProjectService');
 const logTsserverErr = debug(
   'typescript-eslint:typescript-estree:tsserver:err',
 );
@@ -103,6 +104,8 @@ export function createProjectService(
     startGroup: doNothing,
   };
 
+  log('Creating Project Service');
+
   const service = new tsserver.server.ProjectService({
     host: system,
     cancellationToken: { isCancellationRequested: (): boolean => false },
@@ -116,7 +119,22 @@ export function createProjectService(
     jsDocParsingMode,
   });
 
+  if (parseSettings?.extraFileExtensions?.length) {
+    log(
+      'Enabling extra file extensions: %s',
+      parseSettings.extraFileExtensions,
+    );
+    service.setHostConfiguration({
+      extraFileExtensions: parseSettings.extraFileExtensions.map(extension => ({
+        extension,
+        isMixedContent: false,
+        scriptKind: tsserver.ScriptKind.Deferred,
+      })),
+    });
+  }
+
   if (options.defaultProject) {
+    log('Enabling default project: %s', options.defaultProject);
     try {
       const configFile = getParsedConfigFile(
         options.defaultProject,
@@ -134,18 +152,6 @@ export function createProjectService(
       throw new Error(
         `Could not parse default project '${options.defaultProject}': ${(error as Error).message}`,
       );
-    }
-
-    if (parseSettings?.extraFileExtensions?.length) {
-      service.setHostConfiguration({
-        extraFileExtensions: parseSettings.extraFileExtensions.map(
-          extension => ({
-            extension,
-            isMixedContent: false,
-            scriptKind: tsserver.ScriptKind.Deferred,
-          }),
-        ),
-      });
     }
   }
 
