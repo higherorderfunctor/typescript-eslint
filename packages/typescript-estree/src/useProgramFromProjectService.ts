@@ -22,19 +22,16 @@ const makeOpenedFilesCache = (
   service: ts.server.ProjectService & {
     __opened_lru_cache?: Map<string, ts.server.OpenConfiguredProjectResult>;
   },
-  parseSettings: Readonly<MutableParseSettings>,
+  options: {
+    max: number;
+  },
 ): Map<string, ts.server.OpenConfiguredProjectResult> => {
   if (!service.__opened_lru_cache) {
-    if (!parseSettings.projectService?.maximumOpenFiles) {
-      throw new Error(
-        'maximumOpenFiles must be set in parserOptions.projectService',
-      );
-    }
     service.__opened_lru_cache = new LRUCache<
       string,
       ts.server.OpenConfiguredProjectResult
     >({
-      max: parseSettings.projectService.maximumOpenFiles,
+      max: options.max,
       dispose: (_, key): void => {
         log(`Closing project service file: ${key}`);
         service.closeClientFile(key);
@@ -110,13 +107,17 @@ export function useProgramFromProjectService(
   {
     allowDefaultProject,
     maximumDefaultProjectFileMatchCount,
+    maximumOpenFiles,
+    incremental,
     service,
   }: ProjectServiceSettings,
   parseSettings: Readonly<MutableParseSettings>,
   hasFullTypeInformation: boolean,
   defaultProjectMatchedFiles: Set<string>,
 ): ASTAndDefiniteProgram | undefined {
-  const openedFilesCache = makeOpenedFilesCache(service, parseSettings);
+  const openedFilesCache = makeOpenedFilesCache(service, {
+    max: maximumOpenFiles,
+  });
 
   // We don't canonicalize the filename because it caused a performance regression.
   // See https://github.com/typescript-eslint/typescript-eslint/issues/8519
@@ -164,7 +165,7 @@ export function useProgramFromProjectService(
       filePathAbsolute,
     );
 
-    if (parseSettings.projectService?.incremental) {
+    if (incremental) {
       const start = 0;
       const end = cachedScriptInfo.getSnapshot().getLength();
       logEdits(
@@ -200,12 +201,19 @@ export function useProgramFromProjectService(
         parseSettings.tsconfigRootDir,
       );
 
-  if (isOpened) {
-    log('Retrieved project service file from cache: %o', opened);
-  } else {
+  if (!isOpened) {
     openedFilesCache.set(filePathAbsolute, opened);
-    log('Opened project service file: %o', opened);
   }
+
+  log(
+    '%s (%s/%s): %o',
+    isOpened
+      ? 'Reusing project service file from cache'
+      : 'Opened project service file',
+    service.openFiles.size,
+    maximumOpenFiles,
+    opened,
+  );
 
   if (hasFullTypeInformation) {
     log(
