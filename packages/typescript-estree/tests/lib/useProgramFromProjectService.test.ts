@@ -43,7 +43,6 @@ function createMockProjectService() {
 
 const mockParseSettings = {
   filePath: 'path/PascalCaseDirectory/camelCaseFile.ts',
-  extraFileExtensions: [] as readonly string[],
 } as ParseSettings;
 
 const createProjectServiceSettings = <
