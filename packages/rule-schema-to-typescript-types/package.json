@@ -34,8 +34,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@typescript-eslint/type-utils": "link:../type-utils",
-    "@typescript-eslint/utils": "link:../utils",
+    "@typescript-eslint/type-utils": "7.12.0",
+    "@typescript-eslint/utils": "7.12.0",
     "natural-compare": "^1.4.0",
     "prettier": "^3.2.5"
   },

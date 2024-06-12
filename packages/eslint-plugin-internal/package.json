@@ -15,10 +15,10 @@
   },
   "dependencies": {
     "@prettier/sync": "^0.5.1",
-    "@typescript-eslint/rule-tester": "link:../rule-tester",
-    "@typescript-eslint/scope-manager": "link:../scope-manager",
-    "@typescript-eslint/type-utils": "link:../type-utils",
-    "@typescript-eslint/utils": "link:../utils",
+    "@typescript-eslint/rule-tester": "7.12.0",
+    "@typescript-eslint/scope-manager": "7.12.0",
+    "@typescript-eslint/type-utils": "7.12.0",
+    "@typescript-eslint/utils": "7.12.0",
     "prettier": "^3.2.5"
   },
   "devDependencies": {
