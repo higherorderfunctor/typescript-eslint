@@ -98,3 +98,5 @@ packages/**/.yarn
 
 .nx/cache
 .nx/workspace-data
+
+!packages/typescript-estree/dist

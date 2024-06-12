@@ -52,6 +52,11 @@ interface ProjectServiceOptions {
   defaultProject?: string;
 
   /**
+   * Maximum number of files to keep open with the project service.
+   */
+  maximumOpenFiles?: number;
+
+  /**
    * The maximum number of files {@link allowDefaultProject} may match.
    * Each file match slows down linting, so if you do need to use this, please
    * file an informative issue on typescript-eslint explaining why - so we can
