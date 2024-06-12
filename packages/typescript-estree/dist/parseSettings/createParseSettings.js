@@ -82,7 +82,9 @@ function createParseSettings(code, tsestreeOptions = {}) {
         maximumOpenFiles: DEFAULT_PROJECT_OPENED_FILES_THRESHOLD,
         EXPERIMENTAL_editWithDiffs: false,
         maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: DEFAULT_PROJECT_MATCHED_FILES_THRESHOLD,
-        ...(typeof tsestreeOptions.projectService === 'object' ? tsestreeOptions.projectService : {})
+        ...(typeof tsestreeOptions.projectService === 'object'
+            ? tsestreeOptions.projectService
+            : {}),
     };
     const parseSettings = {
         allowInvalidAST: tsestreeOptions.allowInvalidAST === true,

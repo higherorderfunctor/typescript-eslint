@@ -22,7 +22,7 @@ const makeOpenedFilesCache = (
   parseSettings: Readonly<MutableParseSettings>,
 ): Map<string, ts.server.OpenConfiguredProjectResult> => {
   if (!service.__opened_lru_cache) {
-    if (!parseSettings?.projectService?.maximumOpenFiles) {
+    if (!parseSettings.projectService?.maximumOpenFiles) {
       throw new Error(
         'maximumOpenFiles must be set in parserOptions.projectService',
       );
@@ -75,29 +75,29 @@ export function useProgramFromProjectService(
     filePathAbsolute,
   );
 
-  log(
-    'Opening project service file for: %s at absolute path %s',
-    parseSettings.filePath,
+  //  const isOpened = openedFilesCache.has(filePathAbsolute);
+  //  const opened = isOpened
+  //    ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  //      openedFilesCache.get(filePathAbsolute)!
+  //    : service.openClientFile(
+  //        filePathAbsolute,
+  //        parseSettings.codeFullText,
+  //        /* scriptKind */ undefined,
+  //        parseSettings.tsconfigRootDir,
+  //      );
+  const opened = service.openClientFile(
     filePathAbsolute,
+    parseSettings.codeFullText,
+    /* scriptKind */ undefined,
+    parseSettings.tsconfigRootDir,
   );
 
-  const isOpened = openedFilesCache.has(filePathAbsolute);
-  const opened = isOpened
-    ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      openedFilesCache.get(filePathAbsolute)!
-    : service.openClientFile(
-        filePathAbsolute,
-        parseSettings.codeFullText,
-        /* scriptKind */ undefined,
-        parseSettings.tsconfigRootDir,
-      );
-
-  if (isOpened) {
-    log('Retrieved project service file from cache: %o', opened);
-  } else {
-    openedFilesCache.set(filePathAbsolute, opened);
-    log('Opened project service file: %o', opened);
-  }
+  //  if (isOpened) {
+  log('Retrieved project service file from cache: %o', opened);
+  // } else {
+  //   openedFilesCache.set(filePathAbsolute, opened);
+  //   log('Opened project service file: %o', opened);
+  // }
 
   // if (!isOpened) {
   //   if (

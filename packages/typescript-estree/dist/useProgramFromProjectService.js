@@ -13,7 +13,7 @@ const validateDefaultProjectForFilesGlob_1 = require("./create-program/validateD
 const log = (0, debug_1.default)('typescript-eslint:typescript-estree:useProgramFromProjectService');
 const makeOpenedFilesCache = (service, parseSettings) => {
     if (!service.__opened_lru_cache) {
-        if (!parseSettings?.projectService?.maximumOpenFiles) {
+        if (!parseSettings.projectService?.maximumOpenFiles) {
             throw new Error('maximumOpenFiles must be set in parserOptions.projectService');
         }
         service.__opened_lru_cache = new lru_cache_1.LRUCache({
@@ -41,20 +41,24 @@ function useProgramFromProjectService({ allowDefaultProject, maximumDefaultProje
     // See https://github.com/typescript-eslint/typescript-eslint/issues/8519
     const filePathAbsolute = absolutify(parseSettings.filePath);
     log('Opening project service file for: %s at absolute path %s', parseSettings.filePath, filePathAbsolute);
-    log('Opening project service file for: %s at absolute path %s', parseSettings.filePath, filePathAbsolute);
-    const isOpened = openedFilesCache.has(filePathAbsolute);
-    const opened = isOpened
-        ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            openedFilesCache.get(filePathAbsolute)
-        : service.openClientFile(filePathAbsolute, parseSettings.codeFullText, 
-        /* scriptKind */ undefined, parseSettings.tsconfigRootDir);
-    if (isOpened) {
-        log('Retrieved project service file from cache: %o', opened);
-    }
-    else {
-        openedFilesCache.set(filePathAbsolute, opened);
-        log('Opened project service file: %o', opened);
-    }
+    //  const isOpened = openedFilesCache.has(filePathAbsolute);
+    //  const opened = isOpened
+    //    ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    //      openedFilesCache.get(filePathAbsolute)!
+    //    : service.openClientFile(
+    //        filePathAbsolute,
+    //        parseSettings.codeFullText,
+    //        /* scriptKind */ undefined,
+    //        parseSettings.tsconfigRootDir,
+    //      );
+    const opened = service.openClientFile(filePathAbsolute, parseSettings.codeFullText, 
+    /* scriptKind */ undefined, parseSettings.tsconfigRootDir);
+    //  if (isOpened) {
+    log('Retrieved project service file from cache: %o', opened);
+    // } else {
+    //   openedFilesCache.set(filePathAbsolute, opened);
+    //   log('Opened project service file: %o', opened);
+    // }
     // if (!isOpened) {
     //   if (
     //     !isFileInConfiguredProject(
