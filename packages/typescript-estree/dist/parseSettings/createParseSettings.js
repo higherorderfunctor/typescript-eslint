@@ -40,6 +40,8 @@ const warnAboutTSVersion_1 = require("./warnAboutTSVersion");
 const log = (0, debug_1.default)('typescript-eslint:typescript-estree:parser:parseSettings:createParseSettings');
 let TSCONFIG_MATCH_CACHE;
 let TSSERVER_PROJECT_SERVICE = null;
+const DEFAULT_PROJECT_MATCHED_FILES_THRESHOLD = 8;
+const DEFAULT_PROJECT_OPENED_FILES_THRESHOLD = 16;
 // NOTE - we intentionally use "unnecessary" `?.` here because in TS<5.3 this enum doesn't exist
 // This object exists so we can centralize these for tracking and so we don't proliferate these across the file
 // https://github.com/microsoft/TypeScript/issues/56579
@@ -74,6 +76,14 @@ function createParseSettings(code, tsestreeOptions = {}) {
         tsestreeOptions.extraFileExtensions.every(ext => typeof ext === 'string')
         ? tsestreeOptions.extraFileExtensions
         : [];
+    const projectService = {
+        allowDefaultProject: [],
+        defaultProject: null,
+        maximumOpenFiles: DEFAULT_PROJECT_OPENED_FILES_THRESHOLD,
+        EXPERIMENTAL_editWithDiffs: false,
+        maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: DEFAULT_PROJECT_MATCHED_FILES_THRESHOLD,
+        ...(typeof tsestreeOptions.projectService === 'object' ? tsestreeOptions.projectService : {})
+    };
     const parseSettings = {
         allowInvalidAST: tsestreeOptions.allowInvalidAST === true,
         code,
@@ -109,7 +119,7 @@ function createParseSettings(code, tsestreeOptions = {}) {
             (tsestreeOptions.project &&
                 tsestreeOptions.projectService !== false &&
                 process.env.TYPESCRIPT_ESLINT_PROJECT_SERVICE === 'true')
-            ? (TSSERVER_PROJECT_SERVICE ??= (0, createProjectService_1.createProjectService)(tsestreeOptions.projectService, jsDocParsingMode, { extraFileExtensions }))
+            ? (TSSERVER_PROJECT_SERVICE ??= (0, createProjectService_1.createProjectService)(projectService, jsDocParsingMode, { extraFileExtensions }))
             : undefined,
         range: tsestreeOptions.range === true,
         singleRun,

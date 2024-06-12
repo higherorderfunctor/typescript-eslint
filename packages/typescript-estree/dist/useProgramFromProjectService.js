@@ -5,19 +5,73 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.useProgramFromProjectService = void 0;
 const debug_1 = __importDefault(require("debug"));
+const lru_cache_1 = require("lru-cache");
 const minimatch_1 = require("minimatch");
 const path_1 = __importDefault(require("path"));
 const createProjectProgram_1 = require("./create-program/createProjectProgram");
 const validateDefaultProjectForFilesGlob_1 = require("./create-program/validateDefaultProjectForFilesGlob");
 const log = (0, debug_1.default)('typescript-eslint:typescript-estree:useProgramFromProjectService');
+const makeOpenedFilesCache = (service, parseSettings) => {
+    if (!service.__opened_lru_cache) {
+        if (!parseSettings?.projectService?.maximumOpenFiles) {
+            throw new Error('maximumOpenFiles must be set in parserOptions.projectService');
+        }
+        service.__opened_lru_cache = new lru_cache_1.LRUCache({
+            max: parseSettings.projectService.maximumOpenFiles,
+            dispose: (_, key) => {
+                log(`Closing project service file: ${key}`);
+                service.closeClientFile(key);
+            },
+        });
+    }
+    return service.__opened_lru_cache;
+};
+const isFileInConfiguredProject = (service, filePath) => {
+    const configuredProjects = service.configuredProjects;
+    for (const project of configuredProjects.values()) {
+        if (project.containsFile(filePath)) {
+            return true;
+        }
+    }
+    return false;
+};
 function useProgramFromProjectService({ allowDefaultProject, maximumDefaultProjectFileMatchCount, service, }, parseSettings, hasFullTypeInformation, defaultProjectMatchedFiles) {
+    const openedFilesCache = makeOpenedFilesCache(service, parseSettings);
     // We don't canonicalize the filename because it caused a performance regression.
     // See https://github.com/typescript-eslint/typescript-eslint/issues/8519
     const filePathAbsolute = absolutify(parseSettings.filePath);
     log('Opening project service file for: %s at absolute path %s', parseSettings.filePath, filePathAbsolute);
-    const opened = service.openClientFile(filePathAbsolute, parseSettings.codeFullText, 
-    /* scriptKind */ undefined, parseSettings.tsconfigRootDir);
-    log('Opened project service file: %o', opened);
+    log('Opening project service file for: %s at absolute path %s', parseSettings.filePath, filePathAbsolute);
+    const isOpened = openedFilesCache.has(filePathAbsolute);
+    const opened = isOpened
+        ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            openedFilesCache.get(filePathAbsolute)
+        : service.openClientFile(filePathAbsolute, parseSettings.codeFullText, 
+        /* scriptKind */ undefined, parseSettings.tsconfigRootDir);
+    if (isOpened) {
+        log('Retrieved project service file from cache: %o', opened);
+    }
+    else {
+        openedFilesCache.set(filePathAbsolute, opened);
+        log('Opened project service file: %o', opened);
+    }
+    // if (!isOpened) {
+    //   if (
+    //     !isFileInConfiguredProject(
+    //       service,
+    //       ts.server.toNormalizedPath(filePathAbsolute),
+    //     )
+    //   ) {
+    //     log('Orphaned file: %s', filePathAbsolute);
+    //     const watcher = watches.get(filePathAbsolute);
+    //     if (watcher?.value != null) {
+    //       log('Triggering watcher: %s', watcher.path);
+    //       watcher.value.callback();
+    //     } else {
+    //       log('No watcher found for: %s', filePathAbsolute);
+    //     }
+    //   }
+    // }
     if (hasFullTypeInformation) {
         log('Project service type information enabled; checking for file path match on: %o', allowDefaultProject);
         const isDefaultProjectAllowedPath = filePathMatchedBy(parseSettings.filePath, allowDefaultProject);

@@ -4,7 +4,7 @@ import * as ts from 'typescript';
 import type { ProjectServiceSettings } from '../create-program/createProjectService';
 import { createProjectService } from '../create-program/createProjectService';
 import { ensureAbsolutePath } from '../create-program/shared';
-import type { TSESTreeOptions } from '../parser-options';
+import type { ProjectServiceOptions, TSESTreeOptions } from '../parser-options';
 import { isSourceFile } from '../source-files';
 import {
   DEFAULT_TSCONFIG_CACHE_DURATION_SECONDS,
@@ -22,6 +22,9 @@ const log = debug(
 
 let TSCONFIG_MATCH_CACHE: ExpiringCache<string, string> | null;
 let TSSERVER_PROJECT_SERVICE: ProjectServiceSettings | null = null;
+
+const DEFAULT_PROJECT_MATCHED_FILES_THRESHOLD = 8;
+const DEFAULT_PROJECT_OPENED_FILES_THRESHOLD = 16;
 
 // NOTE - we intentionally use "unnecessary" `?.` here because in TS<5.3 this enum doesn't exist
 // This object exists so we can centralize these for tracking and so we don't proliferate these across the file
@@ -66,6 +69,17 @@ export function createParseSettings(
     tsestreeOptions.extraFileExtensions.every(ext => typeof ext === 'string')
       ? tsestreeOptions.extraFileExtensions
       : [];
+  const projectService: Required<ProjectServiceOptions> = {
+    allowDefaultProject: [],
+    defaultProject: null,
+    maximumOpenFiles: DEFAULT_PROJECT_OPENED_FILES_THRESHOLD,
+    EXPERIMENTAL_editWithDiffs: false,
+    maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING:
+      DEFAULT_PROJECT_MATCHED_FILES_THRESHOLD,
+    ...(typeof tsestreeOptions.projectService === 'object'
+      ? tsestreeOptions.projectService
+      : {}),
+  };
 
   const parseSettings: MutableParseSettings = {
     allowInvalidAST: tsestreeOptions.allowInvalidAST === true,
@@ -109,7 +123,7 @@ export function createParseSettings(
         tsestreeOptions.projectService !== false &&
         process.env.TYPESCRIPT_ESLINT_PROJECT_SERVICE === 'true')
         ? (TSSERVER_PROJECT_SERVICE ??= createProjectService(
-            tsestreeOptions.projectService,
+            projectService,
             jsDocParsingMode,
             { extraFileExtensions },
           ))

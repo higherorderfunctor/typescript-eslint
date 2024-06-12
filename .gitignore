@@ -100,3 +100,4 @@ packages/**/.yarn
 .nx/workspace-data
 
 !packages/typescript-estree/dist
+!packages/types/dist

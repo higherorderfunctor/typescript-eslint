@@ -8,8 +8,6 @@ import type { ProjectServiceOptions } from '../parser-options';
 import { getParsedConfigFile } from './getParsedConfigFile';
 import { validateDefaultProjectForFilesGlob } from './validateDefaultProjectForFilesGlob';
 
-const DEFAULT_PROJECT_MATCHED_FILES_THRESHOLD = 8;
-
 const log = debug('typescript-eslint:typescript-estree:createProjectService');
 const logTsserverErr = debug(
   'typescript-eslint:typescript-estree:tsserver:err',
@@ -33,9 +31,11 @@ const createStubFileWatcher = (): ts.FileWatcher => ({
 export type TypeScriptProjectService = ts.server.ProjectService;
 
 export interface ProjectServiceSettings {
-  allowDefaultProject: string[] | undefined;
+  allowDefaultProject: string[];
   maximumDefaultProjectFileMatchCount: number;
   service: TypeScriptProjectService;
+  maximumOpenFiles: number;
+  editWithDiffs: boolean;
 }
 
 export interface ProjectServiceParseSettings {
@@ -43,11 +43,10 @@ export interface ProjectServiceParseSettings {
 }
 
 export function createProjectService(
-  optionsRaw: boolean | ProjectServiceOptions | undefined,
+  options: Required<ProjectServiceOptions>,
   jsDocParsingMode: ts.JSDocParsingMode | undefined,
   parseSettings?: ProjectServiceParseSettings,
 ): ProjectServiceSettings {
-  const options = typeof optionsRaw === 'object' ? optionsRaw : {};
   validateDefaultProjectForFilesGlob(options);
 
   // We import this lazily to avoid its cost for users who don't use the service
@@ -157,9 +156,10 @@ export function createProjectService(
 
   return {
     allowDefaultProject: options.allowDefaultProject,
+    maximumOpenFiles: options.maximumOpenFiles,
+    editWithDiffs: options.EXPERIMENTAL_editWithDiffs,
     maximumDefaultProjectFileMatchCount:
-      options.maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING ??
-      DEFAULT_PROJECT_MATCHED_FILES_THRESHOLD,
+      options.maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING,
     service,
   };
 }

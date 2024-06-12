@@ -9,7 +9,6 @@ const node_path_1 = __importDefault(require("node:path"));
 const debug_1 = __importDefault(require("debug"));
 const getParsedConfigFile_1 = require("./getParsedConfigFile");
 const validateDefaultProjectForFilesGlob_1 = require("./validateDefaultProjectForFilesGlob");
-const DEFAULT_PROJECT_MATCHED_FILES_THRESHOLD = 8;
 const log = (0, debug_1.default)('typescript-eslint:typescript-estree:createProjectService');
 const logTsserverErr = (0, debug_1.default)('typescript-eslint:typescript-estree:tsserver:err');
 const logTsserverInfo = (0, debug_1.default)('typescript-eslint:typescript-estree:tsserver:info');
@@ -19,8 +18,7 @@ const doNothing = () => { };
 const createStubFileWatcher = () => ({
     close: doNothing,
 });
-function createProjectService(optionsRaw, jsDocParsingMode, parseSettings) {
-    const options = typeof optionsRaw === 'object' ? optionsRaw : {};
+function createProjectService(options, jsDocParsingMode, parseSettings) {
     (0, validateDefaultProjectForFilesGlob_1.validateDefaultProjectForFilesGlob)(options);
     // We import this lazily to avoid its cost for users who don't use the service
     // TODO: Once we drop support for TS<5.3 we can import from "typescript" directly
@@ -114,8 +112,9 @@ function createProjectService(optionsRaw, jsDocParsingMode, parseSettings) {
     }
     return {
         allowDefaultProject: options.allowDefaultProject,
-        maximumDefaultProjectFileMatchCount: options.maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING ??
-            DEFAULT_PROJECT_MATCHED_FILES_THRESHOLD,
+        maximumOpenFiles: options.maximumOpenFiles,
+        editWithDiffs: options.EXPERIMENTAL_editWithDiffs,
+        maximumDefaultProjectFileMatchCount: options.maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING,
         service,
     };
 }

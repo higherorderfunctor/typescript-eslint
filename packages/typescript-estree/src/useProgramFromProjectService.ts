@@ -1,6 +1,9 @@
 import debug from 'debug';
+import { diffChars } from 'diff';
+import { LRUCache } from 'lru-cache';
 import { minimatch } from 'minimatch';
 import path from 'path';
+import type * as ts from 'typescript';
 
 import { createProjectProgram } from './create-program/createProjectProgram';
 import type { ProjectServiceSettings } from './create-program/createProjectService';
@@ -12,6 +15,45 @@ const log = debug(
   'typescript-eslint:typescript-estree:useProgramFromProjectService',
 );
 
+const makeOpenedFilesCache = (
+  service: ts.server.ProjectService & {
+    __opened_lru_cache?: Map<string, ts.server.OpenConfiguredProjectResult>;
+  },
+  parseSettings: Readonly<MutableParseSettings>,
+): Map<string, ts.server.OpenConfiguredProjectResult> => {
+  if (!service.__opened_lru_cache) {
+    if (!parseSettings?.projectService?.maximumOpenFiles) {
+      throw new Error(
+        'maximumOpenFiles must be set in parserOptions.projectService',
+      );
+    }
+    service.__opened_lru_cache = new LRUCache<
+      string,
+      ts.server.OpenConfiguredProjectResult
+    >({
+      max: parseSettings.projectService.maximumOpenFiles,
+      dispose: (_, key): void => {
+        log(`Closing project service file: ${key}`);
+        service.closeClientFile(key);
+      },
+    });
+  }
+  return service.__opened_lru_cache;
+};
+
+const isFileInConfiguredProject = (
+  service: ts.server.ProjectService,
+  filePath: string,
+): boolean => {
+  const configuredProjects = service.configuredProjects;
+  for (const project of configuredProjects.values()) {
+    if (project.containsFile(filePath as ts.server.NormalizedPath)) {
+      return true;
+    }
+  }
+  return false;
+};
+
 export function useProgramFromProjectService(
   {
     allowDefaultProject,
@@ -22,6 +64,8 @@ export function useProgramFromProjectService(
   hasFullTypeInformation: boolean,
   defaultProjectMatchedFiles: Set<string>,
 ): ASTAndDefiniteProgram | undefined {
+  const openedFilesCache = makeOpenedFilesCache(service, parseSettings);
+
   // We don't canonicalize the filename because it caused a performance regression.
   // See https://github.com/typescript-eslint/typescript-eslint/issues/8519
   const filePathAbsolute = absolutify(parseSettings.filePath);
@@ -31,14 +75,47 @@ export function useProgramFromProjectService(
     filePathAbsolute,
   );
 
-  const opened = service.openClientFile(
+  log(
+    'Opening project service file for: %s at absolute path %s',
+    parseSettings.filePath,
     filePathAbsolute,
-    parseSettings.codeFullText,
-    /* scriptKind */ undefined,
-    parseSettings.tsconfigRootDir,
   );
 
-  log('Opened project service file: %o', opened);
+  const isOpened = openedFilesCache.has(filePathAbsolute);
+  const opened = isOpened
+    ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      openedFilesCache.get(filePathAbsolute)!
+    : service.openClientFile(
+        filePathAbsolute,
+        parseSettings.codeFullText,
+        /* scriptKind */ undefined,
+        parseSettings.tsconfigRootDir,
+      );
+
+  if (isOpened) {
+    log('Retrieved project service file from cache: %o', opened);
+  } else {
+    openedFilesCache.set(filePathAbsolute, opened);
+    log('Opened project service file: %o', opened);
+  }
+
+  // if (!isOpened) {
+  //   if (
+  //     !isFileInConfiguredProject(
+  //       service,
+  //       ts.server.toNormalizedPath(filePathAbsolute),
+  //     )
+  //   ) {
+  //     log('Orphaned file: %s', filePathAbsolute);
+  //     const watcher = watches.get(filePathAbsolute);
+  //     if (watcher?.value != null) {
+  //       log('Triggering watcher: %s', watcher.path);
+  //       watcher.value.callback();
+  //     } else {
+  //       log('No watcher found for: %s', filePathAbsolute);
+  //     }
+  //   }
+  // }
 
   if (hasFullTypeInformation) {
     log(
@@ -68,6 +145,7 @@ export function useProgramFromProjectService(
       );
     }
   }
+
   log('Retrieving script info and then program for: %s', filePathAbsolute);
 
   const scriptInfo = service.getScriptInfo(filePathAbsolute);
