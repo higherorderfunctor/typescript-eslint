@@ -159,6 +159,7 @@ describe('Validating rule docs', () => {
     'TEMPLATE.md',
     // These rule docs were left behind on purpose for legacy reasons. See the
     // comments in the files for more information.
+    'ban-types.md',
     'no-duplicate-imports.mdx',
     'no-parameter-properties.mdx',
     'no-useless-template-literals.mdx',
@@ -166,7 +167,11 @@ describe('Validating rule docs', () => {
     ...oldStylisticRules,
   ]);
 
-  const rulesWithComplexOptions = new Set(['array-type', 'member-ordering']);
+  const rulesWithComplexOptions = new Set([
+    'array-type',
+    'member-ordering',
+    'no-restricted-types',
+  ]);
 
   // TODO: whittle this list down to as few as possible
   const rulesWithComplexOptionHeadings = new Set([
