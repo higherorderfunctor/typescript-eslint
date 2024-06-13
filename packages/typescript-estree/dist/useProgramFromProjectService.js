@@ -34,13 +34,10 @@ const minimatch_1 = require("minimatch");
 const path_1 = __importDefault(require("path"));
 const ts = __importStar(require("typescript"));
 const createProjectProgram_1 = require("./create-program/createProjectProgram");
-const createProjectService_1 = require("./create-program/createProjectService");
 const getWatchesForProjectService_1 = require("./create-program/getWatchesForProjectService");
 const validateDefaultProjectForFilesGlob_1 = require("./create-program/validateDefaultProjectForFilesGlob");
 const log = (0, debug_1.default)('typescript-eslint:typescript-estree:useProgramFromProjectService');
 const logEdits = (0, debug_1.default)('typescript-eslint:typescript-estree:useProgramFromProjectService:editContent');
-// "@typescript-eslint/types": "higherorderfunctor/typescript-eslint#patches2upstream&path:packages/types",
-// "@typescript-eslint/typescript-estree": "higherorderfunctor/typescript-eslint#patches2upstream&path:packages/typescript-estree",
 const getOrCreateOpenedFilesCache = (service, options) => {
     if (!service.__opened_lru_cache) {
         service.__opened_lru_cache = new lru_cache_1.LRUCache({
@@ -56,14 +53,21 @@ const getOrCreateOpenedFilesCache = (service, options) => {
 const union = (self, other) => new Set([...self, ...other]);
 const difference = (self, other) => new Set([...self].filter(elem => !other.has(elem)));
 const symmetricDifference = (self, other) => union(difference(self, other), difference(other, self));
-const updateExtraFileExtensionsIfNeeded = (service, extraFileExtensions) => {
+const updateExtraFileExtensions = (service, extraFileExtensions) => {
     if (!service.__extra_file_extensions) {
         service.__extra_file_extensions = new Set();
     }
     if (symmetricDifference(service.__extra_file_extensions, new Set(extraFileExtensions)).size > 0) {
         service.__extra_file_extensions = new Set(extraFileExtensions);
+        log('Updating extra file extensions: %s', extraFileExtensions);
+        service.setHostConfiguration({
+            extraFileExtensions: extraFileExtensions.map(extension => ({
+                extension,
+                isMixedContent: false,
+                scriptKind: ts.ScriptKind.Deferred,
+            })),
+        });
         log('Extra file extensions updated: %o', service.__extra_file_extensions);
-        (0, createProjectService_1.updateExtraFileExtensions)(service, extraFileExtensions, ts.ScriptKind.Deferred);
     }
 };
 const filePathMatchedByConfiguredProject = (service, filePath) => {
@@ -95,10 +99,11 @@ const makeEdits = (oldContent, newContent) => {
     return edits;
 };
 function useProgramFromProjectService({ allowDefaultProject, maximumDefaultProjectFileMatchCount, maximumOpenFiles, incremental, service, }, parseSettings, hasFullTypeInformation, defaultProjectMatchedFiles) {
+    // NOTE: triggers a full project reload when changes are detected
+    updateExtraFileExtensions(service, parseSettings.extraFileExtensions);
     const openedFilesCache = getOrCreateOpenedFilesCache(service, {
         max: maximumOpenFiles,
     });
-    updateExtraFileExtensionsIfNeeded(service, parseSettings.extraFileExtensions);
     // We don't canonicalize the filename because it caused a performance regression.
     // See https://github.com/typescript-eslint/typescript-eslint/issues/8519
     const filePathAbsolute = absolutify(parseSettings.filePath);

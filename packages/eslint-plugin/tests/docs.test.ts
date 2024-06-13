@@ -8,16 +8,12 @@ import { Linter } from '@typescript-eslint/utils/ts-eslint';
 import fs from 'fs';
 import { marked } from 'marked';
 import type * as mdast from 'mdast';
-import type { fromMarkdown as FromMarkdown } from 'mdast-util-from-markdown' with { 'resolution-mode':
-  'import' };
-import type { mdxFromMarkdown as MdxFromMarkdown } from 'mdast-util-mdx' with { 'resolution-mode':
-  'import' };
-import type { mdxjs as Mdxjs } from 'micromark-extension-mdxjs' with { 'resolution-mode':
-  'import' };
+import type { fromMarkdown as FromMarkdown } from 'mdast-util-from-markdown' with { 'resolution-mode': 'import' };
+import type { mdxFromMarkdown as MdxFromMarkdown } from 'mdast-util-mdx' with { 'resolution-mode': 'import' };
+import type { mdxjs as Mdxjs } from 'micromark-extension-mdxjs' with { 'resolution-mode': 'import' };
 import path from 'path';
 import { titleCase } from 'title-case';
-import type * as UnistUtilVisit from 'unist-util-visit' with { 'resolution-mode':
-  'import' };
+import type * as UnistUtilVisit from 'unist-util-visit' with { 'resolution-mode': 'import' };
 
 import rules from '../src/rules';
 import { areOptionsValid } from './areOptionsValid';
@@ -159,7 +155,6 @@ describe('Validating rule docs', () => {
     'TEMPLATE.md',
     // These rule docs were left behind on purpose for legacy reasons. See the
     // comments in the files for more information.
-    'ban-types.md',
     'no-duplicate-imports.mdx',
     'no-parameter-properties.mdx',
     'no-useless-template-literals.mdx',
@@ -167,11 +162,7 @@ describe('Validating rule docs', () => {
     ...oldStylisticRules,
   ]);
 
-  const rulesWithComplexOptions = new Set([
-    'array-type',
-    'member-ordering',
-    'no-restricted-types',
-  ]);
+  const rulesWithComplexOptions = new Set(['array-type', 'member-ordering']);
 
   // TODO: whittle this list down to as few as possible
   const rulesWithComplexOptionHeadings = new Set([

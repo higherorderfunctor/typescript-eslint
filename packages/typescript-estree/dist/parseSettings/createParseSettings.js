@@ -72,10 +72,6 @@ function createParseSettings(code, tsestreeOptions = {}) {
                 return JSDocParsingMode.ParseAll;
         }
     })();
-    const extraFileExtensions = Array.isArray(tsestreeOptions.extraFileExtensions) &&
-        tsestreeOptions.extraFileExtensions.every(ext => typeof ext === 'string')
-        ? tsestreeOptions.extraFileExtensions
-        : [];
     const projectService = {
         allowDefaultProject: [],
         defaultProject: null,
@@ -99,7 +95,10 @@ function createParseSettings(code, tsestreeOptions = {}) {
                 : new Set(),
         errorOnTypeScriptSyntacticAndSemanticIssues: false,
         errorOnUnknownASTType: tsestreeOptions.errorOnUnknownASTType === true,
-        extraFileExtensions,
+        extraFileExtensions: Array.isArray(tsestreeOptions.extraFileExtensions) &&
+            tsestreeOptions.extraFileExtensions.every(ext => typeof ext === 'string')
+            ? tsestreeOptions.extraFileExtensions
+            : [],
         filePath: (0, shared_1.ensureAbsolutePath)(typeof tsestreeOptions.filePath === 'string' &&
             tsestreeOptions.filePath !== '<input>'
             ? tsestreeOptions.filePath
@@ -121,7 +120,7 @@ function createParseSettings(code, tsestreeOptions = {}) {
             (tsestreeOptions.project &&
                 tsestreeOptions.projectService !== false &&
                 process.env.TYPESCRIPT_ESLINT_PROJECT_SERVICE === 'true')
-            ? (TSSERVER_PROJECT_SERVICE ??= (0, createProjectService_1.createProjectService)(projectService, jsDocParsingMode, { extraFileExtensions }))
+            ? (TSSERVER_PROJECT_SERVICE ??= (0, createProjectService_1.createProjectService)(projectService, jsDocParsingMode))
             : undefined,
         range: tsestreeOptions.range === true,
         singleRun,

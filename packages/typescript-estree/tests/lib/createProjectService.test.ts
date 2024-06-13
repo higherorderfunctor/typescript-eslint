@@ -16,7 +16,6 @@ const origGetParsedCommandLineOfConfigFile =
 let mockSys: typeof ts.sys;
 const mockGetParsedCommandLineOfConfigFile = jest.fn();
 const mockSetCompilerOptionsForInferredProjects = jest.fn();
-const mockSetHostConfiguration = jest.fn();
 
 describe('createProjectService', () => {
   beforeEach(() => {
@@ -45,7 +44,6 @@ describe('createProjectService', () => {
             }
             setCompilerOptionsForInferredProjects =
               mockSetCompilerOptionsForInferredProjects;
-            setHostConfiguration = mockSetHostConfiguration;
           },
         },
       };
@@ -239,51 +237,6 @@ describe('createProjectService', () => {
       // looser assertion since config parser adds metadata to track references to other files
       expect.objectContaining(compilerOptions),
     );
-  });
-
-  it('does not call setHostConfiguration if extraFileExtensions are not provided', () => {
-    const compilerOptions = { strict: true };
-    mockGetParsedCommandLineOfConfigFile.mockReturnValue({
-      config: { compilerOptions },
-      errors: [],
-    });
-
-    const { service } = createProjectService(
-      {
-        defaultProject: './tsconfig.json',
-      },
-      undefined,
-    );
-
-    expect(service.setHostConfiguration).not.toHaveBeenCalled();
-  });
-
-  it('calls setHostConfiguration when extraFileExtensions is provided', () => {
-    const compilerOptions = { strict: true };
-    mockGetParsedCommandLineOfConfigFile.mockReturnValue({
-      config: { compilerOptions },
-      errors: [],
-    });
-
-    const { service } = createProjectService(
-      {
-        defaultProject: './tsconfig.json',
-      },
-      undefined,
-      {
-        extraFileExtensions: ['.vue'],
-      },
-    );
-
-    expect(service.setHostConfiguration).toHaveBeenCalledWith({
-      extraFileExtensions: [
-        {
-          extension: '.vue',
-          isMixedContent: false,
-          scriptKind: ts.ScriptKind.Deferred,
-        },
-      ],
-    });
   });
 
   it('uses the default projects error debugger for error messages when enabled', () => {

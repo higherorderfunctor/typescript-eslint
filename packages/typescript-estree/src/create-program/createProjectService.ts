@@ -31,36 +31,16 @@ const doNothing = (): void => {};
 export type TypeScriptProjectService = ts.server.ProjectService;
 
 export interface ProjectServiceSettings {
-  allowDefaultProject: string[];
+  allowDefaultProject: string[] | undefined;
   maximumDefaultProjectFileMatchCount: number;
   service: TypeScriptProjectService;
   maximumOpenFiles: number;
   incremental: boolean;
 }
 
-export interface ProjectServiceParseSettings {
-  extraFileExtensions?: string[];
-}
-
-export const updateExtraFileExtensions = (
-  service: TypeScriptProjectService,
-  extraFileExtensions: string[],
-  scriptKind: ts.ScriptKind,
-): void => {
-  log('Updating extra file extensions: %s', extraFileExtensions);
-  service.setHostConfiguration({
-    extraFileExtensions: extraFileExtensions.map(extension => ({
-      extension,
-      isMixedContent: false,
-      scriptKind,
-    })),
-  });
-};
-
 export function createProjectService(
   options: Required<ProjectServiceOptions>,
   jsDocParsingMode: ts.JSDocParsingMode | undefined,
-  parseSettings?: ProjectServiceParseSettings,
 ): ProjectServiceSettings {
   validateDefaultProjectForFilesGlob(options);
 
@@ -69,10 +49,6 @@ export function createProjectService(
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const tsserver = require('typescript/lib/tsserverlibrary') as typeof ts;
 
-  // TODO: see getWatchProgramsForProjects
-  // We don't watch the disk, we just refer to these when ESLint calls us
-  // there's a whole separate update pass in maybeInvalidateProgram at the bottom of getWatchProgramsForProjects
-  // (this "goes nuclear on TypeScript")
   const system: ts.server.ServerHost = {
     ...tsserver.sys,
     clearImmediate,
@@ -135,14 +111,6 @@ export function createProjectService(
     canUseWatchEvents: true,
     jsDocParsingMode,
   });
-
-  if (parseSettings?.extraFileExtensions?.length) {
-    updateExtraFileExtensions(
-      service,
-      parseSettings.extraFileExtensions,
-      tsserver.ScriptKind.Deferred,
-    );
-  }
 
   if (options.defaultProject) {
     log('Enabling default project: %s', options.defaultProject);

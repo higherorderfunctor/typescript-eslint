@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createProjectService = exports.updateExtraFileExtensions = void 0;
+exports.createProjectService = void 0;
 /* eslint-disable @typescript-eslint/no-empty-function -- for TypeScript APIs*/
 const node_path_1 = __importDefault(require("node:path"));
 const debug_1 = __importDefault(require("debug"));
@@ -16,27 +16,12 @@ const logTsserverInfo = (0, debug_1.default)('typescript-eslint:typescript-estre
 const logTsserverPerf = (0, debug_1.default)('typescript-eslint:typescript-estree:tsserver:perf');
 const logTsserverEvent = (0, debug_1.default)('typescript-eslint:typescript-estree:tsserver:event');
 const doNothing = () => { };
-const updateExtraFileExtensions = (service, extraFileExtensions, scriptKind) => {
-    log('Updating extra file extensions: %s', extraFileExtensions);
-    service.setHostConfiguration({
-        extraFileExtensions: extraFileExtensions.map(extension => ({
-            extension,
-            isMixedContent: false,
-            scriptKind,
-        })),
-    });
-};
-exports.updateExtraFileExtensions = updateExtraFileExtensions;
-function createProjectService(options, jsDocParsingMode, parseSettings) {
+function createProjectService(options, jsDocParsingMode) {
     (0, validateDefaultProjectForFilesGlob_1.validateDefaultProjectForFilesGlob)(options);
     // We import this lazily to avoid its cost for users who don't use the service
     // TODO: Once we drop support for TS<5.3 we can import from "typescript" directly
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const tsserver = require('typescript/lib/tsserverlibrary');
-    // TODO: see getWatchProgramsForProjects
-    // We don't watch the disk, we just refer to these when ESLint calls us
-    // there's a whole separate update pass in maybeInvalidateProgram at the bottom of getWatchProgramsForProjects
-    // (this "goes nuclear on TypeScript")
     const system = {
         ...tsserver.sys,
         clearImmediate,
@@ -80,7 +65,7 @@ function createProjectService(options, jsDocParsingMode, parseSettings) {
         },
         startGroup: doNothing,
     };
-    log('Creating Project Service');
+    log('Creating project service with: %o', options);
     const service = new tsserver.server.ProjectService({
         host: system,
         cancellationToken: { isCancellationRequested: () => false },
@@ -96,9 +81,6 @@ function createProjectService(options, jsDocParsingMode, parseSettings) {
         canUseWatchEvents: true,
         jsDocParsingMode,
     });
-    if (parseSettings?.extraFileExtensions?.length) {
-        (0, exports.updateExtraFileExtensions)(service, parseSettings.extraFileExtensions, tsserver.ScriptKind.Deferred);
-    }
     if (options.defaultProject) {
         log('Enabling default project: %s', options.defaultProject);
         try {

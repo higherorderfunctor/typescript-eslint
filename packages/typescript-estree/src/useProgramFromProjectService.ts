@@ -7,7 +7,6 @@ import * as ts from 'typescript';
 
 import { createProjectProgram } from './create-program/createProjectProgram';
 import type { ProjectServiceSettings } from './create-program/createProjectService';
-import { updateExtraFileExtensions } from './create-program/createProjectService';
 import { watches } from './create-program/getWatchesForProjectService';
 import type { ASTAndDefiniteProgram } from './create-program/shared';
 import { DEFAULT_PROJECT_FILES_ERROR_EXPLANATION } from './create-program/validateDefaultProjectForFilesGlob';
@@ -19,9 +18,6 @@ const log = debug(
 const logEdits = debug(
   'typescript-eslint:typescript-estree:useProgramFromProjectService:editContent',
 );
-
-// "@typescript-eslint/types": "higherorderfunctor/typescript-eslint#patches2upstream&path:packages/types",
-// "@typescript-eslint/typescript-estree": "higherorderfunctor/typescript-eslint#patches2upstream&path:packages/typescript-estree",
 
 const getOrCreateOpenedFilesCache = (
   service: ts.server.ProjectService & {
@@ -53,7 +49,7 @@ const difference = <T>(self: Set<T>, other: Set<T>): Set<T> =>
 const symmetricDifference = <T>(self: Set<T>, other: Set<T>): Set<T> =>
   union(difference(self, other), difference(other, self));
 
-const updateExtraFileExtensionsIfNeeded = (
+const updateExtraFileExtensions = (
   service: ts.server.ProjectService & {
     __extra_file_extensions?: Set<string>;
   },
@@ -69,12 +65,15 @@ const updateExtraFileExtensionsIfNeeded = (
     ).size > 0
   ) {
     service.__extra_file_extensions = new Set(extraFileExtensions);
+    log('Updating extra file extensions: %s', extraFileExtensions);
+    service.setHostConfiguration({
+      extraFileExtensions: extraFileExtensions.map(extension => ({
+        extension,
+        isMixedContent: false,
+        scriptKind: ts.ScriptKind.Deferred,
+      })),
+    });
     log('Extra file extensions updated: %o', service.__extra_file_extensions);
-    updateExtraFileExtensions(
-      service,
-      extraFileExtensions,
-      ts.ScriptKind.Deferred,
-    );
   }
 };
 
@@ -130,11 +129,12 @@ export function useProgramFromProjectService(
   hasFullTypeInformation: boolean,
   defaultProjectMatchedFiles: Set<string>,
 ): ASTAndDefiniteProgram | undefined {
+  // NOTE: triggers a full project reload when changes are detected
+  updateExtraFileExtensions(service, parseSettings.extraFileExtensions);
+
   const openedFilesCache = getOrCreateOpenedFilesCache(service, {
     max: maximumOpenFiles,
   });
-
-  updateExtraFileExtensionsIfNeeded(service, parseSettings.extraFileExtensions);
 
   // We don't canonicalize the filename because it caused a performance regression.
   // See https://github.com/typescript-eslint/typescript-eslint/issues/8519
