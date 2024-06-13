@@ -44,12 +44,22 @@ interface ProjectServiceOptions {
    * Globs of files to allow running with the default project compiler options
    * despite not being matched by the project service.
    */
-  allowDefaultProject?: string[];
+  allowDefaultProject?: string[] | undefined;
 
   /**
    * Path to a TSConfig to use instead of TypeScript's default project configuration.
    */
-  defaultProject?: string;
+  defaultProject?: string | undefined | null;
+
+  /**
+   * Maximum number of files to keep open with the project service.
+   */
+  maximumOpenFiles?: number;
+
+  /**
+   * Send changes to files as diffs instead of replacing the entire files.
+   */
+  incremental?: boolean;
 
   /**
    * The maximum number of files {@link allowDefaultProject} may match.
