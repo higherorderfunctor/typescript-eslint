@@ -97,7 +97,3 @@ packages/**/.yarn
 !.yarn/versions
 
 .nx/cache
-.nx/workspace-data
-
-!packages/typescript-estree/dist
-!packages/types/dist
