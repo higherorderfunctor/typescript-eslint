@@ -64,6 +64,7 @@ export function createParseSettings(
         return JSDocParsingMode.ParseAll;
     }
   })();
+  log('Extra file extensions:', tsestreeOptions.extraFileExtensions);
   const extraFileExtensions =
     Array.isArray(tsestreeOptions.extraFileExtensions) &&
     tsestreeOptions.extraFileExtensions.every(ext => typeof ext === 'string')

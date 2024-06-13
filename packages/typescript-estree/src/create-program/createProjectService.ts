@@ -121,7 +121,7 @@ export function createProjectService(
     jsDocParsingMode,
   });
 
-  log('TEST: %o', parseSettings);
+  log('Parse Settings: %o', parseSettings);
   if (parseSettings?.extraFileExtensions?.length) {
     log(
       'Enabling extra file extensions: %s',

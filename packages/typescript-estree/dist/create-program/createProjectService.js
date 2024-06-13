@@ -77,13 +77,15 @@ function createProjectService(options, jsDocParsingMode, parseSettings) {
         useInferredProjectPerProjectRoot: false,
         logger,
         eventHandler: logTsserverEvent.enabled
-            ? (e) => { logTsserverEvent(e); }
+            ? (e) => {
+                logTsserverEvent(e);
+            }
             : undefined,
         session: undefined,
         canUseWatchEvents: true,
         jsDocParsingMode,
     });
-    log("TEST: %o", parseSettings);
+    log('Parse Settings: %o', parseSettings);
     if (parseSettings?.extraFileExtensions?.length) {
         log('Enabling extra file extensions: %s', parseSettings.extraFileExtensions);
         service.setHostConfiguration({

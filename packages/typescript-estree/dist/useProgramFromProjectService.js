@@ -118,12 +118,13 @@ function useProgramFromProjectService({ allowDefaultProject, maximumDefaultProje
         : 'Opened project service file', service.openFiles.size, maximumOpenFiles, opened);
     // FIXME: can at least notify the user instead of getting stuck waiting
     if (opened.configFileName === undefined) {
-        // parse settings does not always contain extraFileExtensions when set and re-running seems to fix
-        // could just be my complex config file, by trying to catch to track
-        debug_1.default.enable("typescript-eslint:typescript-estree:useProgramFromProjectService");
-        log('Inferred project issue, try re-running eslint: %s: isFileInConfiguredProject=%s: %o: %o', filePathAbsolute, isFileInConfiguredProject, parseSettings, cachedScriptInfo);
-        // eslint-disable-next-line no-process-exit
-        process.exit(1);
+        const namespaces = debug_1.default.disable(); // capture currently enabled loggers
+        debug_1.default.enable(log.name); // enable just this logger
+        log('Inferred Project Context: %s: %o', filePathAbsolute, { isFileInConfiguredProject }, parseSettings);
+        log('WARNING: Possible inferred project issue: %s', filePathAbsolute);
+        log('Try re-running if file should NOT be using default compiler options: %s');
+        debug_1.default.disable(); // disable this logger
+        debug_1.default.enable(namespaces); // re-enable original logger
     }
     if (hasFullTypeInformation) {
         log('Project service type information enabled; checking for file path match on: %o', allowDefaultProject);
