@@ -118,7 +118,7 @@ export function createProjectService(
     startGroup: doNothing,
   };
 
-  log('Creating Project Service');
+  log('Creating project service with: %o', options);
 
   const service = new tsserver.server.ProjectService({
     host: system,

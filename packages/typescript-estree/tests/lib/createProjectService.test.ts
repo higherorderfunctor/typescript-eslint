@@ -37,9 +37,11 @@ describe('createProjectService', () => {
             ) {
               this.logger = args[0].logger;
               this.eventHandler = args[0].eventHandler;
-              this.eventHandler!({
-                eventName: 'projectLoadingStart',
-              } as ts.server.ProjectLoadingStartEvent);
+              if (this.eventHandler) {
+                this.eventHandler({
+                  eventName: 'projectLoadingStart',
+                } as ts.server.ProjectLoadingStartEvent);
+              }
             }
             setCompilerOptionsForInferredProjects =
               mockSetCompilerOptionsForInferredProjects;
