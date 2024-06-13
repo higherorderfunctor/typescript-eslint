@@ -42,6 +42,21 @@ export interface ProjectServiceParseSettings {
   extraFileExtensions?: string[];
 }
 
+export const updateExtraFileExtensions = (
+  service: TypeScriptProjectService,
+  extraFileExtensions: string[],
+  scriptKind: ts.ScriptKind,
+): void => {
+  log('Updating extra file extensions: %s', extraFileExtensions);
+  service.setHostConfiguration({
+    extraFileExtensions: extraFileExtensions.map(extension => ({
+      extension,
+      isMixedContent: false,
+      scriptKind,
+    })),
+  });
+};
+
 export function createProjectService(
   options: Required<ProjectServiceOptions>,
   jsDocParsingMode: ts.JSDocParsingMode | undefined,
@@ -121,19 +136,12 @@ export function createProjectService(
     jsDocParsingMode,
   });
 
-  log('Parse Settings: %o', parseSettings);
   if (parseSettings?.extraFileExtensions?.length) {
-    log(
-      'Enabling extra file extensions: %s',
+    updateExtraFileExtensions(
+      service,
       parseSettings.extraFileExtensions,
+      tsserver.ScriptKind.Deferred,
     );
-    service.setHostConfiguration({
-      extraFileExtensions: parseSettings.extraFileExtensions.map(extension => ({
-        extension,
-        isMixedContent: false,
-        scriptKind: tsserver.ScriptKind.Deferred,
-      })),
-    });
   }
 
   if (options.defaultProject) {

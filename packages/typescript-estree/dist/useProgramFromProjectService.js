@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -9,7 +32,9 @@ const diff_1 = require("diff");
 const lru_cache_1 = require("lru-cache");
 const minimatch_1 = require("minimatch");
 const path_1 = __importDefault(require("path"));
+const ts = __importStar(require("typescript"));
 const createProjectProgram_1 = require("./create-program/createProjectProgram");
+const createProjectService_1 = require("./create-program/createProjectService");
 const getWatchesForProjectService_1 = require("./create-program/getWatchesForProjectService");
 const validateDefaultProjectForFilesGlob_1 = require("./create-program/validateDefaultProjectForFilesGlob");
 const log = (0, debug_1.default)('typescript-eslint:typescript-estree:useProgramFromProjectService');
@@ -27,6 +52,19 @@ const getOrCreateOpenedFilesCache = (service, options) => {
         });
     }
     return service.__opened_lru_cache;
+};
+const union = (self, other) => new Set([...self, ...other]);
+const difference = (self, other) => new Set([...self].filter(elem => !other.has(elem)));
+const symmetricDifference = (self, other) => union(difference(self, other), difference(other, self));
+const updateExtraFileExtensionsIfNeeded = (service, extraFileExtensions) => {
+    if (!service.__extra_file_extensions) {
+        service.__extra_file_extensions = new Set();
+    }
+    if (symmetricDifference(service.__extra_file_extensions, new Set(extraFileExtensions)).size > 0) {
+        service.__extra_file_extensions = new Set(extraFileExtensions);
+        log('Extra file extensions updated: %o', service.__extra_file_extensions);
+        (0, createProjectService_1.updateExtraFileExtensions)(service, extraFileExtensions, ts.ScriptKind.Deferred);
+    }
 };
 const filePathMatchedByConfiguredProject = (service, filePath) => {
     const configuredProjects = service.configuredProjects;
@@ -60,6 +98,7 @@ function useProgramFromProjectService({ allowDefaultProject, maximumDefaultProje
     const openedFilesCache = getOrCreateOpenedFilesCache(service, {
         max: maximumOpenFiles,
     });
+    updateExtraFileExtensionsIfNeeded(service, parseSettings.extraFileExtensions);
     // We don't canonicalize the filename because it caused a performance regression.
     // See https://github.com/typescript-eslint/typescript-eslint/issues/8519
     const filePathAbsolute = absolutify(parseSettings.filePath);
@@ -116,16 +155,6 @@ function useProgramFromProjectService({ allowDefaultProject, maximumDefaultProje
     log('%s (%s/%s): %o', isOpened
         ? 'Reusing project service file from cache'
         : 'Opened project service file', service.openFiles.size, maximumOpenFiles, opened);
-    // FIXME: can at least notify the user instead of getting stuck waiting
-    if (opened.configFileName === undefined) {
-        const namespaces = debug_1.default.disable(); // capture currently enabled loggers
-        debug_1.default.enable(log.name); // enable just this logger
-        log('Inferred Project Context: %s: %o', filePathAbsolute, { isFileInConfiguredProject }, parseSettings);
-        log('WARNING: Possible inferred project issue: %s', filePathAbsolute);
-        log('Try re-running if file should NOT be using default compiler options: %s');
-        debug_1.default.disable(); // disable this logger
-        debug_1.default.enable(namespaces); // re-enable original logger
-    }
     if (hasFullTypeInformation) {
         log('Project service type information enabled; checking for file path match on: %o', allowDefaultProject);
         const isDefaultProjectAllowedPath = filePathMatchedBy(parseSettings.filePath, allowDefaultProject);

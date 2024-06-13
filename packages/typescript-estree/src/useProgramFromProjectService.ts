@@ -3,10 +3,11 @@ import { diffChars } from 'diff';
 import { LRUCache } from 'lru-cache';
 import { minimatch } from 'minimatch';
 import path from 'path';
-import type * as ts from 'typescript';
+import * as ts from 'typescript';
 
 import { createProjectProgram } from './create-program/createProjectProgram';
 import type { ProjectServiceSettings } from './create-program/createProjectService';
+import { updateExtraFileExtensions } from './create-program/createProjectService';
 import { watches } from './create-program/getWatchesForProjectService';
 import type { ASTAndDefiniteProgram } from './create-program/shared';
 import { DEFAULT_PROJECT_FILES_ERROR_EXPLANATION } from './create-program/validateDefaultProjectForFilesGlob';
@@ -43,6 +44,38 @@ const getOrCreateOpenedFilesCache = (
     });
   }
   return service.__opened_lru_cache;
+};
+
+const union = <T>(self: Set<T>, other: Set<T>): Set<T> =>
+  new Set([...self, ...other]);
+const difference = <T>(self: Set<T>, other: Set<T>): Set<T> =>
+  new Set([...self].filter(elem => !other.has(elem)));
+const symmetricDifference = <T>(self: Set<T>, other: Set<T>): Set<T> =>
+  union(difference(self, other), difference(other, self));
+
+const updateExtraFileExtensionsIfNeeded = (
+  service: ts.server.ProjectService & {
+    __extra_file_extensions?: Set<string>;
+  },
+  extraFileExtensions: string[],
+): void => {
+  if (!service.__extra_file_extensions) {
+    service.__extra_file_extensions = new Set<string>();
+  }
+  if (
+    symmetricDifference(
+      service.__extra_file_extensions,
+      new Set(extraFileExtensions),
+    ).size > 0
+  ) {
+    service.__extra_file_extensions = new Set(extraFileExtensions);
+    log('Extra file extensions updated: %o', service.__extra_file_extensions);
+    updateExtraFileExtensions(
+      service,
+      extraFileExtensions,
+      ts.ScriptKind.Deferred,
+    );
+  }
 };
 
 const filePathMatchedByConfiguredProject = (
@@ -100,6 +133,8 @@ export function useProgramFromProjectService(
   const openedFilesCache = getOrCreateOpenedFilesCache(service, {
     max: maximumOpenFiles,
   });
+
+  updateExtraFileExtensionsIfNeeded(service, parseSettings.extraFileExtensions);
 
   // We don't canonicalize the filename because it caused a performance regression.
   // See https://github.com/typescript-eslint/typescript-eslint/issues/8519
@@ -194,24 +229,6 @@ export function useProgramFromProjectService(
     maximumOpenFiles,
     opened,
   );
-
-  // FIXME: can at least notify the user instead of getting stuck waiting
-  if (opened.configFileName === undefined) {
-    const namespaces = debug.disable(); // capture currently enabled loggers
-    debug.enable(log.name); // enable just this logger
-    log(
-      'Inferred Project Context: %s: %o',
-      filePathAbsolute,
-      { isFileInConfiguredProject },
-      parseSettings,
-    );
-    log('WARNING: Possible inferred project issue: %s', filePathAbsolute);
-    log(
-      'Try re-running if file should NOT be using default compiler options: %s',
-    );
-    debug.disable(); // disable this logger
-    debug.enable(namespaces); // re-enable original logger
-  }
 
   if (hasFullTypeInformation) {
     log(

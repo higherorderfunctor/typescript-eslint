@@ -11,5 +11,6 @@ export interface ProjectServiceSettings {
 export interface ProjectServiceParseSettings {
     extraFileExtensions?: string[];
 }
+export declare const updateExtraFileExtensions: (service: TypeScriptProjectService, extraFileExtensions: string[], scriptKind: ts.ScriptKind) => void;
 export declare function createProjectService(options: Required<ProjectServiceOptions>, jsDocParsingMode: ts.JSDocParsingMode | undefined, parseSettings?: ProjectServiceParseSettings): ProjectServiceSettings;
 //# sourceMappingURL=createProjectService.d.ts.map
