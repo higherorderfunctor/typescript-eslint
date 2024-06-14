@@ -55,24 +55,29 @@ const updateExtraFileExtensions = (
   },
   extraFileExtensions: string[],
 ): void => {
-  if (!service.__extra_file_extensions) {
-    service.__extra_file_extensions = new Set<string>();
-  }
+  const uniqExtraFileExtensions = new Set(extraFileExtensions);
   if (
-    symmetricDifference(
-      service.__extra_file_extensions,
-      new Set(extraFileExtensions),
-    ).size > 0
+    (service.__extra_file_extensions === undefined &&
+      uniqExtraFileExtensions.size > 0) ||
+    (service.__extra_file_extensions !== undefined &&
+      symmetricDifference(
+        service.__extra_file_extensions,
+        uniqExtraFileExtensions,
+      ).size > 0)
   ) {
-    service.__extra_file_extensions = new Set(extraFileExtensions);
-    log('Updating extra file extensions: %s', extraFileExtensions);
+    log(
+      'Updating extra file extensions: %s: %s',
+      service.__extra_file_extensions,
+      uniqExtraFileExtensions,
+    );
     service.setHostConfiguration({
-      extraFileExtensions: extraFileExtensions.map(extension => ({
+      extraFileExtensions: [...uniqExtraFileExtensions].map(extension => ({
         extension,
         isMixedContent: false,
         scriptKind: ts.ScriptKind.Deferred,
       })),
     });
+    service.__extra_file_extensions = uniqExtraFileExtensions;
     log('Extra file extensions updated: %o', service.__extra_file_extensions);
   }
 };
