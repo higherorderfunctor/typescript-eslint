@@ -302,7 +302,11 @@ If you absolutely need more files included, set parserOptions.projectService.max
     expect(actual).toBe(program);
   });
 
+<<<<<<< HEAD
+  it('does not call setHostConfiguration if extraFileExtensions are not provided', () => {
+=======
   it('does not call setHostConfiguration on the service with default extensions if extraFileExtensions are not provided', () => {
+>>>>>>> perf/9312-set-host-config-once-per-project-service
     const { service } = createMockProjectService();
 
     useProgramFromProjectService(
@@ -318,6 +322,9 @@ If you absolutely need more files included, set parserOptions.projectService.max
     expect(service.setHostConfiguration).not.toHaveBeenCalled();
   });
 
+<<<<<<< HEAD
+  it('calls setHostConfiguration on the service to use extraFileExtensions when it is provided', () => {
+=======
   it('does not call setHostConfiguration on the service with default extensions if extraFileExtensions is empty', () => {
     const { service } = createMockProjectService();
 
@@ -338,6 +345,7 @@ If you absolutely need more files included, set parserOptions.projectService.max
   });
 
   it('calls setHostConfiguration on the service with default extensions to use extraFileExtensions when it is provided', () => {
+>>>>>>> perf/9312-set-host-config-once-per-project-service
     const { service } = createMockProjectService();
 
     useProgramFromProjectService(
@@ -447,6 +455,8 @@ If you absolutely need more files included, set parserOptions.projectService.max
       extraFileExtensions: [],
     });
   });
+<<<<<<< HEAD
+=======
 
   it('calls setHostConfiguration on the service with non-default extensions to use defaults when extraFileExtensions are not provided', () => {
     const { service } = createMockProjectService();
@@ -483,4 +493,5 @@ If you absolutely need more files included, set parserOptions.projectService.max
       extraFileExtensions: [],
     });
   });
+>>>>>>> perf/9312-set-host-config-once-per-project-service
 });

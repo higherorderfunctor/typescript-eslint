@@ -1,8 +1,10 @@
+import path from 'node:path';
+import util from 'node:util';
+
 import debug from 'debug';
 import { diffChars } from 'diff';
 import { LRUCache } from 'lru-cache';
 import { minimatch } from 'minimatch';
-import path from 'path';
 import * as ts from 'typescript';
 
 import { createProjectProgram } from './create-program/createProjectProgram';
@@ -19,67 +21,60 @@ const logEdits = debug(
   'typescript-eslint:typescript-estree:useProgramFromProjectService:editContent',
 );
 
-const getOrCreateOpenedFilesCache = (
-  service: ts.server.ProjectService & {
-    __opened_lru_cache?: Map<string, ts.server.OpenConfiguredProjectResult>;
-  },
-  options: {
-    max: number;
-  },
-): Map<string, ts.server.OpenConfiguredProjectResult> => {
-  if (!service.__opened_lru_cache) {
-    service.__opened_lru_cache = new LRUCache<
-      string,
-      ts.server.OpenConfiguredProjectResult
-    >({
-      max: options.max,
-      dispose: (_, key): void => {
-        log(`Closing project service file: ${key}`);
-        service.closeClientFile(key);
-      },
-    });
-  }
-  return service.__opened_lru_cache;
-};
-
-const union = <T>(self: Set<T>, other: Set<T>): Set<T> =>
-  new Set([...self, ...other]);
-const difference = <T>(self: Set<T>, other: Set<T>): Set<T> =>
-  new Set([...self].filter(elem => !other.has(elem)));
-const symmetricDifference = <T>(self: Set<T>, other: Set<T>): Set<T> =>
-  union(difference(self, other), difference(other, self));
+const serviceFileExtensions = new WeakMap<ts.server.ProjectService, string[]>();
 
 const updateExtraFileExtensions = (
-  service: ts.server.ProjectService & {
-    __extra_file_extensions?: Set<string>;
-  },
+  service: ts.server.ProjectService,
   extraFileExtensions: string[],
 ): void => {
-  const uniqExtraFileExtensions = new Set(extraFileExtensions);
+  const currentServiceFileExtensions = serviceFileExtensions.get(service) ?? [];
   if (
-    (service.__extra_file_extensions === undefined &&
-      uniqExtraFileExtensions.size > 0) ||
-    (service.__extra_file_extensions !== undefined &&
-      symmetricDifference(
-        service.__extra_file_extensions,
-        uniqExtraFileExtensions,
-      ).size > 0)
+    !util.isDeepStrictEqual(currentServiceFileExtensions, extraFileExtensions)
   ) {
     log(
-      'Updating extra file extensions: %s: %s',
-      service.__extra_file_extensions,
-      uniqExtraFileExtensions,
+      'Updating extra file extensions: before=%s: after=%s',
+      currentServiceFileExtensions,
+      extraFileExtensions,
     );
     service.setHostConfiguration({
-      extraFileExtensions: [...uniqExtraFileExtensions].map(extension => ({
+      extraFileExtensions: extraFileExtensions.map(extension => ({
         extension,
         isMixedContent: false,
         scriptKind: ts.ScriptKind.Deferred,
       })),
     });
-    service.__extra_file_extensions = uniqExtraFileExtensions;
-    log('Extra file extensions updated: %o', service.__extra_file_extensions);
+    serviceFileExtensions.set(service, extraFileExtensions);
+    log('Extra file extensions updated: %o', extraFileExtensions);
   }
+};
+
+const serviceOpenFiles = new WeakMap<
+  ts.server.ProjectService,
+  LRUCache<string, ts.server.OpenConfiguredProjectResult>
+>();
+
+const getOrCreateOpenedFilesCache = (
+  service: ts.server.ProjectService,
+  options: {
+    max: number;
+  },
+): Map<string, ts.server.OpenConfiguredProjectResult> => {
+  const currentServiceOpenFiles = serviceOpenFiles.get(service);
+  if (currentServiceOpenFiles) {
+    return currentServiceOpenFiles;
+  }
+  const newServiceOpenFiles = new LRUCache<
+    string,
+    ts.server.OpenConfiguredProjectResult
+  >({
+    max: options.max,
+    dispose: (_, key): void => {
+      log(`Closing project service file: ${key}`);
+      service.closeClientFile(key);
+    },
+  });
+  serviceOpenFiles.set(service, newServiceOpenFiles);
+  return newServiceOpenFiles;
 };
 
 const filePathMatchedByConfiguredProject = (

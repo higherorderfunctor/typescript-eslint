@@ -27,49 +27,49 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.useProgramFromProjectService = void 0;
+const node_path_1 = __importDefault(require("node:path"));
+const node_util_1 = __importDefault(require("node:util"));
 const debug_1 = __importDefault(require("debug"));
 const diff_1 = require("diff");
 const lru_cache_1 = require("lru-cache");
 const minimatch_1 = require("minimatch");
-const path_1 = __importDefault(require("path"));
 const ts = __importStar(require("typescript"));
 const createProjectProgram_1 = require("./create-program/createProjectProgram");
 const getWatchesForProjectService_1 = require("./create-program/getWatchesForProjectService");
 const validateDefaultProjectForFilesGlob_1 = require("./create-program/validateDefaultProjectForFilesGlob");
 const log = (0, debug_1.default)('typescript-eslint:typescript-estree:useProgramFromProjectService');
 const logEdits = (0, debug_1.default)('typescript-eslint:typescript-estree:useProgramFromProjectService:editContent');
-const getOrCreateOpenedFilesCache = (service, options) => {
-    if (!service.__opened_lru_cache) {
-        service.__opened_lru_cache = new lru_cache_1.LRUCache({
-            max: options.max,
-            dispose: (_, key) => {
-                log(`Closing project service file: ${key}`);
-                service.closeClientFile(key);
-            },
-        });
-    }
-    return service.__opened_lru_cache;
-};
-const union = (self, other) => new Set([...self, ...other]);
-const difference = (self, other) => new Set([...self].filter(elem => !other.has(elem)));
-const symmetricDifference = (self, other) => union(difference(self, other), difference(other, self));
+const serviceFileExtensions = new WeakMap();
 const updateExtraFileExtensions = (service, extraFileExtensions) => {
-    const uniqExtraFileExtensions = new Set(extraFileExtensions);
-    if ((service.__extra_file_extensions === undefined &&
-        uniqExtraFileExtensions.size > 0) ||
-        (service.__extra_file_extensions !== undefined &&
-            symmetricDifference(service.__extra_file_extensions, uniqExtraFileExtensions).size > 0)) {
-        log('Updating extra file extensions: %s: %s', service.__extra_file_extensions, uniqExtraFileExtensions);
+    const currentServiceFileExtensions = serviceFileExtensions.get(service) ?? [];
+    if (!node_util_1.default.isDeepStrictEqual(currentServiceFileExtensions, extraFileExtensions)) {
+        log('Updating extra file extensions: before=%s: after=%s', currentServiceFileExtensions, extraFileExtensions);
         service.setHostConfiguration({
-            extraFileExtensions: [...uniqExtraFileExtensions].map(extension => ({
+            extraFileExtensions: extraFileExtensions.map(extension => ({
                 extension,
                 isMixedContent: false,
                 scriptKind: ts.ScriptKind.Deferred,
             })),
         });
-        service.__extra_file_extensions = uniqExtraFileExtensions;
-        log('Extra file extensions updated: %o', service.__extra_file_extensions);
+        serviceFileExtensions.set(service, extraFileExtensions);
+        log('Extra file extensions updated: %o', extraFileExtensions);
     }
+};
+const serviceOpenFiles = new WeakMap();
+const getOrCreateOpenedFilesCache = (service, options) => {
+    const currentServiceOpenFiles = serviceOpenFiles.get(service);
+    if (currentServiceOpenFiles) {
+        return currentServiceOpenFiles;
+    }
+    const newServiceOpenFiles = new lru_cache_1.LRUCache({
+        max: options.max,
+        dispose: (_, key) => {
+            log(`Closing project service file: ${key}`);
+            service.closeClientFile(key);
+        },
+    });
+    serviceOpenFiles.set(service, newServiceOpenFiles);
+    return newServiceOpenFiles;
 };
 const filePathMatchedByConfiguredProject = (service, filePath) => {
     const configuredProjects = service.configuredProjects;
@@ -201,9 +201,9 @@ If you absolutely need more files included, set parserOptions.projectService.max
     log('Found project service program for: %s', filePathAbsolute);
     return (0, createProjectProgram_1.createProjectProgram)(parseSettings, [program]);
     function absolutify(filePath) {
-        return path_1.default.isAbsolute(filePath)
+        return node_path_1.default.isAbsolute(filePath)
             ? filePath
-            : path_1.default.join(service.host.getCurrentDirectory(), filePath);
+            : node_path_1.default.join(service.host.getCurrentDirectory(), filePath);
     }
 }
 exports.useProgramFromProjectService = useProgramFromProjectService;

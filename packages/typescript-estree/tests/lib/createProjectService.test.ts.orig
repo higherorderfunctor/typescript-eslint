@@ -4,12 +4,6 @@ import { join } from 'node:path';
 import debug from 'debug';
 import * as ts from 'typescript';
 
-import fs from 'node:fs';
-import { join } from 'node:path';
-
-import debug from 'debug';
-import * as ts from 'typescript';
-
 import { createProjectService } from '../../src/create-program/createProjectService';
 import { CORE_COMPILER_OPTIONS } from '../../src/create-program/shared';
 
@@ -22,6 +16,34 @@ const origGetParsedCommandLineOfConfigFile =
 let mockSys: typeof ts.sys;
 const mockGetParsedCommandLineOfConfigFile = jest.fn();
 const mockSetCompilerOptionsForInferredProjects = jest.fn();
+<<<<<<< HEAD
+=======
+
+jest.mock('typescript/lib/tsserverlibrary', () => ({
+  ...jest.requireActual('typescript/lib/tsserverlibrary'),
+  readConfigFile: mockReadConfigFile,
+  server: {
+    ...jest.requireActual('typescript/lib/tsserverlibrary').server,
+    ProjectService: class {
+      logger: ts.server.Logger;
+      eventHandler: ts.server.ProjectServiceEventHandler | undefined;
+      constructor(
+        ...args: ConstructorParameters<typeof ts.server.ProjectService>
+      ) {
+        this.logger = args[0].logger;
+        this.eventHandler = args[0].eventHandler;
+        if (this.eventHandler) {
+          this.eventHandler({
+            eventName: 'projectLoadingStart',
+          } as ts.server.ProjectLoadingStartEvent);
+        }
+      }
+      setCompilerOptionsForInferredProjects =
+        mockSetCompilerOptionsForInferredProjects;
+    },
+  },
+}));
+>>>>>>> perf/9312-set-host-config-once-per-project-service
 
 describe('createProjectService', () => {
   beforeEach(() => {
@@ -190,6 +212,7 @@ describe('createProjectService', () => {
     );
   });
 
+<<<<<<< HEAD
   it('uses the default projects extended compiler options when options.defaultProject is set and getParsedCommandLineOfConfigFile succeeds', () => {
     mockGetParsedCommandLineOfConfigFile.mockImplementation(
       origGetParsedCommandLineOfConfigFile,
@@ -245,6 +268,8 @@ describe('createProjectService', () => {
     );
   });
 
+=======
+>>>>>>> perf/9312-set-host-config-once-per-project-service
   it('uses the default projects error debugger for error messages when enabled', () => {
     jest.spyOn(process.stderr, 'write').mockImplementation();
     const { service } = createProjectService(undefined, undefined);
