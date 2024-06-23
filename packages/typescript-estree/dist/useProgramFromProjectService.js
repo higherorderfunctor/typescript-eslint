@@ -39,22 +39,6 @@ const getWatchesForProjectService_1 = require("./create-program/getWatchesForPro
 const validateDefaultProjectForFilesGlob_1 = require("./create-program/validateDefaultProjectForFilesGlob");
 const log = (0, debug_1.default)('typescript-eslint:typescript-estree:useProgramFromProjectService');
 const logEdits = (0, debug_1.default)('typescript-eslint:typescript-estree:useProgramFromProjectService:editContent');
-const serviceFileExtensions = new WeakMap();
-const updateExtraFileExtensions = (service, extraFileExtensions) => {
-    const currentServiceFileExtensions = serviceFileExtensions.get(service) ?? [];
-    if (!node_util_1.default.isDeepStrictEqual(currentServiceFileExtensions, extraFileExtensions)) {
-        log('Updating extra file extensions: before=%s: after=%s', currentServiceFileExtensions, extraFileExtensions);
-        service.setHostConfiguration({
-            extraFileExtensions: extraFileExtensions.map(extension => ({
-                extension,
-                isMixedContent: false,
-                scriptKind: ts.ScriptKind.Deferred,
-            })),
-        });
-        serviceFileExtensions.set(service, extraFileExtensions);
-        log('Extra file extensions updated: %o', extraFileExtensions);
-    }
-};
 const serviceOpenFiles = new WeakMap();
 const getOrCreateOpenedFilesCache = (service, options) => {
     const currentServiceOpenFiles = serviceOpenFiles.get(service);
@@ -98,6 +82,22 @@ const makeEdits = (oldContent, newContent) => {
         }
     });
     return edits;
+};
+const serviceFileExtensions = new WeakMap();
+const updateExtraFileExtensions = (service, extraFileExtensions) => {
+    const currentServiceFileExtensions = serviceFileExtensions.get(service) ?? [];
+    if (!node_util_1.default.isDeepStrictEqual(currentServiceFileExtensions, extraFileExtensions)) {
+        log('Updating extra file extensions: before=%s: after=%s', currentServiceFileExtensions, extraFileExtensions);
+        service.setHostConfiguration({
+            extraFileExtensions: extraFileExtensions.map(extension => ({
+                extension,
+                isMixedContent: false,
+                scriptKind: ts.ScriptKind.Deferred,
+            })),
+        });
+        serviceFileExtensions.set(service, extraFileExtensions);
+        log('Extra file extensions updated: %o', extraFileExtensions);
+    }
 };
 function useProgramFromProjectService({ allowDefaultProject, maximumDefaultProjectFileMatchCount, maximumOpenFiles, incremental, service, }, parseSettings, hasFullTypeInformation, defaultProjectMatchedFiles) {
     // NOTE: triggers a full project reload when changes are detected
