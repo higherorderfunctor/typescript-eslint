@@ -21,33 +21,6 @@ const logEdits = debug(
   'typescript-eslint:typescript-estree:useProgramFromProjectService:editContent',
 );
 
-const serviceFileExtensions = new WeakMap<ts.server.ProjectService, string[]>();
-
-const updateExtraFileExtensions = (
-  service: ts.server.ProjectService,
-  extraFileExtensions: string[],
-): void => {
-  const currentServiceFileExtensions = serviceFileExtensions.get(service) ?? [];
-  if (
-    !util.isDeepStrictEqual(currentServiceFileExtensions, extraFileExtensions)
-  ) {
-    log(
-      'Updating extra file extensions: before=%s: after=%s',
-      currentServiceFileExtensions,
-      extraFileExtensions,
-    );
-    service.setHostConfiguration({
-      extraFileExtensions: extraFileExtensions.map(extension => ({
-        extension,
-        isMixedContent: false,
-        scriptKind: ts.ScriptKind.Deferred,
-      })),
-    });
-    serviceFileExtensions.set(service, extraFileExtensions);
-    log('Extra file extensions updated: %o', extraFileExtensions);
-  }
-};
-
 const serviceOpenFiles = new WeakMap<
   ts.server.ProjectService,
   LRUCache<string, ts.server.OpenConfiguredProjectResult>
@@ -115,6 +88,33 @@ const makeEdits = (oldContent: string, newContent: string): ContentEdit[] => {
     }
   });
   return edits;
+};
+
+const serviceFileExtensions = new WeakMap<ts.server.ProjectService, string[]>();
+
+const updateExtraFileExtensions = (
+  service: ts.server.ProjectService,
+  extraFileExtensions: string[],
+): void => {
+  const currentServiceFileExtensions = serviceFileExtensions.get(service) ?? [];
+  if (
+    !util.isDeepStrictEqual(currentServiceFileExtensions, extraFileExtensions)
+  ) {
+    log(
+      'Updating extra file extensions: before=%s: after=%s',
+      currentServiceFileExtensions,
+      extraFileExtensions,
+    );
+    service.setHostConfiguration({
+      extraFileExtensions: extraFileExtensions.map(extension => ({
+        extension,
+        isMixedContent: false,
+        scriptKind: ts.ScriptKind.Deferred,
+      })),
+    });
+    serviceFileExtensions.set(service, extraFileExtensions);
+    log('Extra file extensions updated: %o', extraFileExtensions);
+  }
 };
 
 export function useProgramFromProjectService(
